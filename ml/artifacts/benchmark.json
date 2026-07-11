@@ -1,0 +1,117 @@
+{
+  "holdout_n": 1600,
+  "prevalence": 0.1025,
+  "discrimination": {
+    "auc": 0.8643,
+    "ks": 0.5751
+  },
+  "rank_ordering_by_band": [
+    {
+      "band": "A",
+      "n": 637,
+      "observed_default_rate": 0.0126,
+      "score_range": [
+        751,
+        900
+      ]
+    },
+    {
+      "band": "B",
+      "n": 26,
+      "observed_default_rate": 0.0385,
+      "score_range": [
+        689,
+        689
+      ]
+    },
+    {
+      "band": "C",
+      "n": 436,
+      "observed_default_rate": 0.0436,
+      "score_range": [
+        660,
+        678
+      ]
+    },
+    {
+      "band": "D",
+      "n": 199,
+      "observed_default_rate": 0.1156,
+      "score_range": [
+        542,
+        578
+      ]
+    },
+    {
+      "band": "E",
+      "n": 302,
+      "observed_default_rate": 0.3742,
+      "score_range": [
+        300,
+        483
+      ]
+    }
+  ],
+  "decision_simulation": {
+    "policy": "APPROVE if band A/B \u00b7 REFER if C/D \u00b7 DECLINE if E",
+    "approve": {
+      "n": 663,
+      "rate": 0.4144,
+      "bad_in_book": 9,
+      "bad_rate": 0.0136
+    },
+    "refer": {
+      "n": 635,
+      "rate": 0.3969,
+      "bad_rate": 0.0661
+    },
+    "decline": {
+      "n": 302,
+      "rate": 0.1888,
+      "bad_rate": 0.3742
+    },
+    "bad_loans_caught_pct": 94.5,
+    "approved_book_vs_population": 7.6
+  },
+  "confusion_at_approve_cutoff": {
+    "true_bad_flagged": 155,
+    "true_good_flagged": 782,
+    "bad_approved": 9,
+    "good_approved": 654,
+    "recall_bad": 0.9451,
+    "approval_precision_good": 0.9864
+  },
+  "score_cutoff_tradeoff": [
+    {
+      "approve_rate": 0.4,
+      "book_bad_rate": 0.0125,
+      "score_cutoff": 689
+    },
+    {
+      "approve_rate": 0.5,
+      "book_bad_rate": 0.025,
+      "score_cutoff": 678
+    },
+    {
+      "approve_rate": 0.6,
+      "book_bad_rate": 0.0219,
+      "score_cutoff": 678
+    },
+    {
+      "approve_rate": 0.7,
+      "book_bad_rate": 0.0268,
+      "score_cutoff": 578
+    },
+    {
+      "approve_rate": 0.8,
+      "book_bad_rate": 0.0375,
+      "score_cutoff": 542
+    },
+    {
+      "approve_rate": 0.9,
+      "book_bad_rate": 0.0569,
+      "score_cutoff": 462
+    }
+  ],
+  "note": "Synthetic-v1 holdout; demonstrates the decisioning pipeline, not production performance."
+}

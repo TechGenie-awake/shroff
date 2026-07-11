@@ -1,0 +1,69 @@
+{
+  "_comment": "Exact demo-persona thread per CONTRACTS.md — the PHOENIX003 graph story plus SURESH002's distressed counterparty. Every row is is_sample=1. IDs are law; do not edit without updating CONTRACTS.md.",
+  "companies": [
+    {
+      "cin": "U74999DL2019PTC356789",
+      "name": "VERTEX IMPEX PRIVATE LIMITED",
+      "pan": "AABCV9876L",
+      "address_norm": "14 KAROL BAGH INDUSTRIAL AREA DELHI 110005",
+      "incorporated_on": "2019-08-12",
+      "status": "Struck Off"
+    },
+    {
+      "cin": "U51909DL2025PTC412345",
+      "name": "NEXON TRADING PRIVATE LIMITED",
+      "pan": "AAECN1234F",
+      "address_norm": "14 KAROL BAGH INDUSTRIAL AREA DELHI 110005",
+      "incorporated_on": "2025-05-02",
+      "status": "Active"
+    }
+  ],
+  "directors": [
+    { "din": "08234567", "name": "VIKRAM MALHOTRA", "pan": "AEXPM4521C" },
+    { "din": "07654321", "name": "RAKESH SHARMA", "pan": "BKJPS2211E" }
+  ],
+  "directorships": [
+    { "din": "08234567", "cin": "U74999DL2019PTC356789", "role": "Director", "from_date": "2019-08-12", "to_date": "2025-05-20" },
+    { "din": "07654321", "cin": "U74999DL2019PTC356789", "role": "Director", "from_date": "2019-08-12", "to_date": "2025-05-20" },
+    { "din": "08234567", "cin": "U51909DL2025PTC412345", "role": "Director", "from_date": "2025-05-02", "to_date": null }
+  ],
+  "negreg_company_status": [
+    {
+      "cin": "U74999DL2019PTC356789",
+      "name": "VERTEX IMPEX PRIVATE LIMITED",
+      "status": "Struck Off",
+      "roc": "RoC-Delhi",
+      "source": "sample:mca_company_master",
+      "is_sample": 1
+    }
+  ],
+  "negreg_name": [
+    {
+      "name_norm": "VERTEX IMPEX",
+      "name_raw": "Vertex Impex Pvt Ltd",
+      "list_type": "wilful_defaulter",
+      "authority": "TransUnion CIBIL suit-filed wilful defaulters (bank-reported)",
+      "source": "sample:cibil_wilful_defaulters",
+      "is_sample": 1
+    }
+  ],
+  "negreg_din": [
+    {
+      "din": "07654321",
+      "name": "RAKESH SHARMA",
+      "list_type": "director_of_struck_off",
+      "source": "sample:mca_directors_struckoff",
+      "is_sample": 1
+    }
+  ],
+  "negreg_gstin": [
+    {
+      "gstin": "27AABCT5678Q1Z9",
+      "trade_name": "TRIDENT TEXTILES",
+      "state": "Maharashtra",
+      "reason": "Non-genuine taxpayer — registration found bogus on physical verification (fake ITC chain)",
+      "source": "sample:mahagst_nongenuine",
+      "is_sample": 1
+    }
+  ]
+}

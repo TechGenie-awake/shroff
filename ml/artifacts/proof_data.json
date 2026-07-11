@@ -1,0 +1,525 @@
+{
+  "metrics": {
+    "sub_models": {
+      "cash_flow": {
+        "auc": 0.8137,
+        "ks": 0.5169
+      },
+      "growth": {
+        "auc": 0.7864,
+        "ks": 0.4354
+      },
+      "stability": {
+        "auc": 0.7878,
+        "ks": 0.466
+      },
+      "compliance": {
+        "auc": 0.8155,
+        "ks": 0.515
+      }
+    },
+    "combined": {
+      "auc": 0.856,
+      "ks": 0.5751,
+      "brier_calibrated": 0.0648
+    },
+    "baseline_logreg": {
+      "auc": 0.8671,
+      "ks": 0.5935
+    },
+    "train_n": 6400,
+    "holdout_n": 1600,
+    "prevalence": 0.1024,
+    "meta_coefficients": {
+      "cash_flow": 0.3886,
+      "growth": 0.1493,
+      "stability": 0.2623,
+      "compliance": 0.2271
+    },
+    "model_version": "v1",
+    "trained_on": "synthetic-v1",
+    "seed": 42
+  },
+  "benchmark": {
+    "holdout_n": 1600,
+    "prevalence": 0.1025,
+    "discrimination": {
+      "auc": 0.8643,
+      "ks": 0.5751
+    },
+    "rank_ordering_by_band": [
+      {
+        "band": "A",
+        "n": 637,
+        "observed_default_rate": 0.0126,
+        "score_range": [
+          751,
+          900
+        ]
+      },
+      {
+        "band": "B",
+        "n": 26,
+        "observed_default_rate": 0.0385,
+        "score_range": [
+          689,
+          689
+        ]
+      },
+      {
+        "band": "C",
+        "n": 436,
+        "observed_default_rate": 0.0436,
+        "score_range": [
+          660,
+          678
+        ]
+      },
+      {
+        "band": "D",
+        "n": 199,
+        "observed_default_rate": 0.1156,
+        "score_range": [
+          542,
+          578
+        ]
+      },
+      {
+        "band": "E",
+        "n": 302,
+        "observed_default_rate": 0.3742,
+        "score_range": [
+          300,
+          483
+        ]
+      }
+    ],
+    "decision_simulation": {
+      "policy": "APPROVE if band A/B \u00b7 REFER if C/D \u00b7 DECLINE if E",
+      "approve": {
+        "n": 663,
+        "rate": 0.4144,
+        "bad_in_book": 9,
+        "bad_rate": 0.0136
+      },
+      "refer": {
+        "n": 635,
+        "rate": 0.3969,
+        "bad_rate": 0.0661
+      },
+      "decline": {
+        "n": 302,
+        "rate": 0.1888,
+        "bad_rate": 0.3742
+      },
+      "bad_loans_caught_pct": 94.5,
+      "approved_book_vs_population": 7.6
+    },
+    "confusion_at_approve_cutoff": {
+      "true_bad_flagged": 155,
+      "true_good_flagged": 782,
+      "bad_approved": 9,
+      "good_approved": 654,
+      "recall_bad": 0.9451,
+      "approval_precision_good": 0.9864
+    },
+    "score_cutoff_tradeoff": [
+      {
+        "approve_rate": 0.4,
+        "book_bad_rate": 0.0125,
+        "score_cutoff": 689
+      },
+      {
+        "approve_rate": 0.5,
+        "book_bad_rate": 0.025,
+        "score_cutoff": 678
+      },
+      {
+        "approve_rate": 0.6,
+        "book_bad_rate": 0.0219,
+        "score_cutoff": 678
+      },
+      {
+        "approve_rate": 0.7,
+        "book_bad_rate": 0.0268,
+        "score_cutoff": 578
+      },
+      {
+        "approve_rate": 0.8,
+        "book_bad_rate": 0.0375,
+        "score_cutoff": 542
+      },
+      {
+        "approve_rate": 0.9,
+        "book_bad_rate": 0.0569,
+        "score_cutoff": 462
+      }
+    ],
+    "note": "Synthetic-v1 holdout; demonstrates the decisioning pipeline, not production performance."
+  },
+  "personas": [
+    {
+      "id": "RAMESH001",
+      "input": {
+        "name": "Ramesh Kirana & General Stores",
+        "business": "kirana_retail",
+        "city": "Pune",
+        "entity_type": "proprietorship",
+        "pan": "ABCPR3456K",
+        "gstin": "27ABCPR3456K1Z5",
+        "requested_inr": 1500000,
+        "ground_truth_default": 0,
+        "months_history": 24,
+        "avg_monthly_inflow_inr": 806290,
+        "inflow_trend_pct": 16.1,
+        "gst_vs_bank_ratio": 1.01,
+        "total_bounces": 0,
+        "avg_upi_share": 0.75,
+        "epfo_headcount": 4,
+        "top3_buyer_share": 0.55,
+        "gst_on_time_months": 23
+      },
+      "output": {
+        "score": 769,
+        "band": "A",
+        "pd_12m": 0.0182,
+        "sub_scores": {
+          "cash_flow": 74,
+          "growth": 65,
+          "stability": 47,
+          "compliance": 77
+        },
+        "verdict": "APPROVE",
+        "amount_inr": 1250000,
+        "tenure_months": 36,
+        "rationale": "20% working-capital norm (Nayak committee) on \u20b996.8L annualized bank-verified turnover \u00d7 0.65 band-A factor \u2192 eligible \u20b912.6L; sanction = min(requested \u20b915.0L, eligible) = \u20b912.5L over 36 months; 2 advisory name match(es) flagged for manual disposition (not verdict-affecting).",
+        "reasons": [
+          {
+            "code": "CM-06",
+            "dir": "positive",
+            "text": "GST-declared turnover diverges from bank inflows by 1%"
+          },
+          {
+            "code": "CF-06",
+            "dir": "positive",
+            "text": "Average bank balance grew 48% between first and last six months"
+          },
+          {
+            "code": "CF-10",
+            "dir": "positive",
+            "text": "Account near zero 0.0 days per month on average"
+          },
+          {
+            "code": "ST-09",
+            "dir": "negative",
+            "text": "B2B share of sales at 18%"
+          }
+        ],
+        "screening_hits": [
+          {
+            "registry": "negreg_name",
+            "list_name": "opensanctions:india",
+            "matched_on": "name (normalized exact)",
+            "confidence": "advisory",
+            "detail": "'Ramesh Kumar' \u2014 nse debarred [India National Stock Exchange Debarred Entities]",
+            "source_url": "",
+            "is_sample": false,
+            "input_field": "legal_name"
+          },
+          {
+            "registry": "negreg_name",
+            "list_name": "opensanctions:india",
+            "matched_on": "name (normalized exact)",
+            "confidence": "advisory",
+            "detail": "'Ramesh Kumar' \u2014 pep [India Lok and Rajya Sabha Members]",
+            "source_url": "",
+            "is_sample": false,
+            "input_field": "legal_name"
+          }
+        ],
+        "phoenix_flag": false,
+        "ews": {
+          "level": "green",
+          "triggers": []
+        },
+        "supply_chain": {
+          "top3_buyer_share": 0.55,
+          "distressed_counterparties": []
+        }
+      }
+    },
+    {
+      "id": "SURESH002",
+      "input": {
+        "name": "Suresh Trading Co.",
+        "business": "trader",
+        "city": "Mumbai",
+        "entity_type": "proprietorship",
+        "pan": "AKLPM8765D",
+        "gstin": "27AKLPM8765D1Z3",
+        "requested_inr": 1000000,
+        "ground_truth_default": 1,
+        "months_history": 24,
+        "avg_monthly_inflow_inr": 1127629,
+        "inflow_trend_pct": -5.8,
+        "gst_vs_bank_ratio": 1.37,
+        "total_bounces": 4,
+        "avg_upi_share": 0.22,
+        "epfo_headcount": 2,
+        "top3_buyer_share": 0.78,
+        "gst_on_time_months": 22
+      },
+      "output": {
+        "score": 419,
+        "band": "E",
+        "pd_12m": 0.3485,
+        "sub_scores": {
+          "cash_flow": 10,
+          "growth": 2,
+          "stability": 15,
+          "compliance": 12
+        },
+        "verdict": "DECLINE",
+        "amount_inr": 0,
+        "tenure_months": 0,
+        "rationale": "Band E yields no working-capital eligibility under the 20% turnover norm (Nayak committee): early-warning red.",
+        "reasons": [
+          {
+            "code": "CM-06",
+            "dir": "negative",
+            "text": "GST-declared turnover diverges from bank inflows by 37%"
+          },
+          {
+            "code": "CF-05",
+            "dir": "negative",
+            "text": "Average balance covers 12% of a typical month's outflows"
+          },
+          {
+            "code": "GR-07",
+            "dir": "negative",
+            "text": "EPFO headcount shrank 22% over the observed period"
+          },
+          {
+            "code": "CF-13",
+            "dir": "negative",
+            "text": "Self-transfers (own-account round-tripping) at 19% of inflows"
+          }
+        ],
+        "screening_hits": [],
+        "phoenix_flag": false,
+        "ews": {
+          "level": "red",
+          "triggers": [
+            "EPFO headcount down 31% in the last quarter vs the prior nine months",
+            "3 bounced payments in the last 3 months",
+            "GST late/nil filing streak of 2 consecutive months"
+          ]
+        },
+        "supply_chain": {
+          "top3_buyer_share": 0.78,
+          "distressed_counterparties": [
+            {
+              "counterparty_gstin": "27AABCT5678Q1Z9",
+              "counterparty_name": "Trident Textiles",
+              "share": 0.45,
+              "hits": [
+                {
+                  "registry": "negreg_gstin",
+                  "list_name": "Maharashtra GST non-genuine taxpayers",
+                  "matched_on": "GSTIN",
+                  "confidence": "high",
+                  "detail": "TRIDENT TEXTILES (Maharashtra) \u2014 Non-genuine taxpayer \u2014 registration found bogus on physical verification (fake ITC chain)",
+                  "source_url": "https://mahagst.gov.in/en/list-of-non-genuine-tax-payers",
+                  "is_sample": true
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "PHOENIX003",
+      "input": {
+        "name": "Nexon Trading Pvt Ltd",
+        "business": "trader",
+        "city": "Delhi",
+        "entity_type": "pvt_ltd",
+        "pan": "AAECN1234F",
+        "gstin": "07AAECN1234F1Z2",
+        "requested_inr": 2000000,
+        "ground_truth_default": 0,
+        "months_history": 14,
+        "avg_monthly_inflow_inr": 398425,
+        "inflow_trend_pct": -1.3,
+        "gst_vs_bank_ratio": 1.0,
+        "total_bounces": 0,
+        "avg_upi_share": 0.45,
+        "epfo_headcount": 3,
+        "top3_buyer_share": 0.62,
+        "gst_on_time_months": 14
+      },
+      "output": {
+        "score": 678,
+        "band": "C",
+        "pd_12m": 0.0425,
+        "sub_scores": {
+          "cash_flow": 63,
+          "growth": 24,
+          "stability": 41,
+          "compliance": 90
+        },
+        "verdict": "REFER",
+        "amount_inr": 300000,
+        "tenure_months": 12,
+        "rationale": "20% working-capital norm (Nayak committee) on \u20b947.8L annualized bank-verified turnover \u00d7 0.30 band-C factor \u2192 eligible \u20b92.9L; sanction = min(requested \u20b920.0L, eligible) = \u20b93.0L over 12 months; entity-graph phoenix flag \u2014 promoter network reaches VERTEX IMPEX PRIVATE LIMITED \u00b7 U74999DL2019PTC356789 \u2014 wilful defaulter on the negative registry; RAKESH SHARMA \u00b7 DIN 07654321 \u2014 director of struck off on the negative registry.",
+        "reasons": [
+          {
+            "code": "CF-05",
+            "dir": "negative",
+            "text": "Average balance covers 9% of a typical month's outflows"
+          },
+          {
+            "code": "CM-06",
+            "dir": "positive",
+            "text": "GST-declared turnover diverges from bank inflows by 0%"
+          },
+          {
+            "code": "CF-07",
+            "dir": "negative",
+            "text": "Minimum monthly balance holds at 2% of monthly outflows"
+          },
+          {
+            "code": "CF-03",
+            "dir": "positive",
+            "text": "Transaction-count regularity at 0.09 variability across months"
+          }
+        ],
+        "screening_hits": [],
+        "phoenix_flag": true,
+        "ews": {
+          "level": "green",
+          "triggers": []
+        },
+        "supply_chain": {
+          "top3_buyer_share": 0.62,
+          "distressed_counterparties": []
+        }
+      }
+    }
+  ],
+  "screening_proof": [
+    {
+      "source": "MahaGST Non-Genuine Taxpayers (GSTIN)",
+      "query": "27AAACA8104A1ZD",
+      "confidence": "high",
+      "is_sample": false,
+      "detail": "PLANWELL INDUSTRIES CORP. PVT LTD (Maharashtra) \u2014 Non-genuine taxpayer (Category I NGTP) \u2014 ab-initio registration cancellation, MahaGST list as on 31.05.2026"
+    },
+    {
+      "source": "CBDT Income-Tax Defaulters (PAN)",
+      "query": "AUIPS5659P",
+      "confidence": "high",
+      "is_sample": false,
+      "detail": "DEVENDRA KANTILAL SHAH \u2014 Income-tax defaulter (arrears); arrears \u20b9251,300,000"
+    },
+    {
+      "source": "RBI Alert List (name)",
+      "query": "Alpari",
+      "confidence": "advisory",
+      "is_sample": false,
+      "detail": "'Alpari' \u2014 rbi alert list [RBI Alert List \u2014 unauthorised forex/ETP platforms]"
+    },
+    {
+      "source": "Persona demo \u2014 Vertex Impex (CIN)",
+      "query": "U74999DL2019PTC356789",
+      "confidence": "high",
+      "is_sample": true,
+      "detail": "VERTEX IMPEX PRIVATE LIMITED \u2014 status Struck Off (RoC-Delhi)"
+    }
+  ],
+  "phoenix_graph": {
+    "nodes": [
+      {
+        "id": "pan:AAECN1234F",
+        "type": "pan",
+        "label": "AAECN1234F \u00b7 NEXON TRADING PRIVATE LIMITED",
+        "flag": null
+      },
+      {
+        "id": "cin:U51909DL2025PTC412345",
+        "type": "company",
+        "label": "NEXON TRADING PRIVATE LIMITED \u00b7 U51909DL2025PTC412345",
+        "flag": null
+      },
+      {
+        "id": "din:08234567",
+        "type": "din",
+        "label": "VIKRAM MALHOTRA \u00b7 DIN 08234567",
+        "flag": null
+      },
+      {
+        "id": "cin:U74999DL2019PTC356789",
+        "type": "company",
+        "label": "VERTEX IMPEX PRIVATE LIMITED \u00b7 U74999DL2019PTC356789",
+        "flag": "wilful_defaulter"
+      },
+      {
+        "id": "din:07654321",
+        "type": "din",
+        "label": "RAKESH SHARMA \u00b7 DIN 07654321",
+        "flag": "director_of_struck_off"
+      },
+      {
+        "id": "addr:14 KAROL BAGH INDUSTRIAL AREA DELHI 110005",
+        "type": "address",
+        "label": "14 KAROL BAGH INDUSTRIAL AREA DELHI 110005",
+        "flag": null
+      }
+    ],
+    "edges": [
+      {
+        "source": "pan:AAECN1234F",
+        "target": "cin:U51909DL2025PTC412345",
+        "relation": "pan_of"
+      },
+      {
+        "source": "din:08234567",
+        "target": "cin:U51909DL2025PTC412345",
+        "relation": "director_of"
+      },
+      {
+        "source": "din:08234567",
+        "target": "cin:U74999DL2019PTC356789",
+        "relation": "director_of"
+      },
+      {
+        "source": "din:07654321",
+        "target": "cin:U74999DL2019PTC356789",
+        "relation": "director_of"
+      },
+      {
+        "source": "cin:U51909DL2025PTC412345",
+        "target": "addr:14 KAROL BAGH INDUSTRIAL AREA DELHI 110005",
+        "relation": "registered_at"
+      },
+      {
+        "source": "cin:U74999DL2019PTC356789",
+        "target": "addr:14 KAROL BAGH INDUSTRIAL AREA DELHI 110005",
+        "relation": "registered_at"
+      }
+    ],
+    "phoenix_flag": true,
+    "narrative": "PAN AAECN1234F resolves to NEXON TRADING PRIVATE LIMITED (CIN U51909DL2025PTC412345, incorporated 2025-05 (~14 months old)). The promoter network reaches VERTEX IMPEX PRIVATE LIMITED \u00b7 U74999DL2019PTC356789 via director RAKESH SHARMA \u00b7 DIN 07654321, VIKRAM MALHOTRA \u00b7 DIN 08234567: status 'Struck Off' on the MCA struck-off register (RoC-Delhi); name matches wilful-defaulter list entry 'Vertex Impex Pvt Ltd' [TransUnion CIBIL suit-filed wilful defaulters (bank-reported)]. Co-director RAKESH SHARMA \u00b7 DIN 07654321 is flagged: DIN on the director-of-struck-off list. NEXON TRADING PRIVATE LIMITED and VERTEX IMPEX PRIVATE LIMITED share the registered address 14 KAROL BAGH INDUSTRIAL AREA DELHI 110005. Phoenix pattern: the applicant is clean on direct checks, but its promoter/co-director path reaches struck-off or wilful-defaulter entities \u2014 refer to manual review."
+  },
+  "pipeline": {
+    "datagen_s": 12,
+    "features_s": 4,
+    "train_s": 20,
+    "deterministic_seed": 42,
+    "population": 8000,
+    "features": 45,
+    "registry_real_rows": 44982,
+    "registry_total": 45266
+  }
+}

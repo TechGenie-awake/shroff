@@ -1,0 +1,47 @@
+{
+  "built_at": "2026-07-11T03:44:57",
+  "outcomes": [
+    {
+      "source": "real:datagov_company_status",
+      "ok": true,
+      "rows": 900,
+      "note": "MCA Strike-Off CINs across RoCs (data.gov.in OGD)"
+    },
+    {
+      "source": "real:datagov_companies",
+      "ok": true,
+      "rows": 150,
+      "note": "graph background rows (real MCA CINs)"
+    },
+    {
+      "source": "real:gstin",
+      "ok": true,
+      "rows": 11424,
+      "note": "MahaGST non-genuine taxpayers + OpenSanctions (real GSTINs)"
+    },
+    {
+      "source": "real:pan",
+      "ok": true,
+      "rows": 11710,
+      "note": "CBDT arrears defaulters + SEBI/NSE debarred (real PANs)"
+    },
+    {
+      "source": "real:name",
+      "ok": true,
+      "rows": 20948,
+      "note": "OpenSanctions (UAPA/NSE/SEBI/PEP) + RBI Alert List (real names)"
+    },
+    {
+      "source": "synthetic:universe",
+      "ok": true,
+      "rows": 0,
+      "note": "graph universe 60 cos (20 struck-off w/ directors) + gated DIN/wilful/CIRP samples, all is_sample=1, seed=42"
+    },
+    {
+      "source": "persona:demo_thread",
+      "ok": true,
+      "rows": 11,
+      "note": "Vertex/Nexon/Vikram/Rakesh/Trident \u2014 exact CONTRACTS.md ids"
+    }
+  ]
+}

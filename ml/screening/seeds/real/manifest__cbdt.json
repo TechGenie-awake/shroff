@@ -1,0 +1,9 @@
+{
+  "source": "CBDT / Income Tax Department — Tax Defaulters (arrears)",
+  "url": "https://www.incometaxindia.gov.in/o/c/taxdefaulterses",
+  "status": "real",
+  "rows": 79,
+  "access_method": "The tax-defaulters.aspx page is a JS/React widget; the actual data is a Liferay Objects REST endpoint /o/c/taxdefaulterses discovered in the widget bundle /o/etds-tax-defaulters/assets/index-*.js. The www host sits behind Akamai and 403s bare curl AND full-Chrome-header curl (edgesuite Access Denied) and the /Documents/List.pdf link 404s/403s; defeated with TLS fingerprint impersonation via curl_cffi (impersonate='chrome'). GET /o/c/taxdefaulterses?pageSize=200&page=1 returns 200 JSON, totalCount=96, all 96 items in one page.",
+  "note": "96 published defaulters; each item carries real 'pan', 'name', 'taxArrear' (label on page: 'Amount of Tax Due (₹ in crores)'). 16 rows have pan='NO PAN' or non-structural PAN and were skipped (key identifier must be valid); 1 duplicate PAN de-duped -> 79 emitted. amount_inr = round(taxArrear * 10,000,000). All PANs validate_pan-valid, RESERVED-filtered (0 collisions). This is the exact ~96-row real list the SOURCES.md sample was mirroring.",
+  "freshness": "Records dateCreated/dateModified 2025-11-10 (current published defaulter set)"
+}

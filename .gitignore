@@ -1,0 +1,40 @@
+# ── internal planning / strategy notes (kept local) ──
+NOTES-internal.md
+BUILD-SPEC-track03.md
+CONTRACTS.md
+APPLICATION.md
+TODO.md
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+.venv/
+**/.venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ── Node / Next ──
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+*.tsbuildinfo
+next-env.d.ts
+
+# ── regenerable caches / large scratch ──
+ml/screening/seeds/downloaded/
+docs/render-light.png
+docs/render-dark.png
+
+# ── env / secrets ──
+.env
+.env.*
+!.env.example
+!**/.env.local.example
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+
+# throwaway API captures
+ml/artifacts/capture/

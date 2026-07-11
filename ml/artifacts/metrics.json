@@ -1,0 +1,41 @@
+{
+  "sub_models": {
+    "cash_flow": {
+      "auc": 0.8137,
+      "ks": 0.5169
+    },
+    "growth": {
+      "auc": 0.7864,
+      "ks": 0.4354
+    },
+    "stability": {
+      "auc": 0.7878,
+      "ks": 0.466
+    },
+    "compliance": {
+      "auc": 0.8155,
+      "ks": 0.515
+    }
+  },
+  "combined": {
+    "auc": 0.856,
+    "ks": 0.5751,
+    "brier_calibrated": 0.0648
+  },
+  "baseline_logreg": {
+    "auc": 0.8671,
+    "ks": 0.5935
+  },
+  "train_n": 6400,
+  "holdout_n": 1600,
+  "prevalence": 0.1024,
+  "meta_coefficients": {
+    "cash_flow": 0.3886,
+    "growth": 0.1493,
+    "stability": 0.2623,
+    "compliance": 0.2271
+  },
+  "model_version": "v1",
+  "trained_on": "synthetic-v1",
+  "seed": 42
+}

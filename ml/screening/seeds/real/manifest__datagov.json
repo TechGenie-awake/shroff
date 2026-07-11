@@ -1,0 +1,18 @@
+{
+  "source": "data.gov.in OGD \u2014 MCA Company Master Data (Delhi, Maharashtra, West Bengal, Rajasthan; upto 31st March 2021)",
+  "url": "https://api.data.gov.in/resource/bffbc5a2-0c7b-4c7a-be82-6da25438dd07 (+ b83e1bfa-14a6-4ac1-8ce2-3f74b82a0a5d Maharashtra, d1302dba-c522-415d-90f3-8f3032192f8b West Bengal, 53d57616-e512-48ff-9200-8298472efe47 Rajasthan; catalog ec58dab7-d891-4abb-936e-d5d274a6ce9b)",
+  "status": "real",
+  "rows": {
+    "company_status__datagov.csv": 900,
+    "companies__datagov.csv": 150,
+    "strike_off_by_state": {
+      "Delhi": 400,
+      "Maharashtra": 200,
+      "West Bengal": 150,
+      "Rajasthan": 150
+    }
+  },
+  "access_method": "OGD datastore API with public sample key; responses clamped to 10 records/request, paginated with &offset= at 0.6s intervals with retry/backoff on 429/TLS stalls; filters[company_status]=Strike Off for negatives + unfiltered slices for the graph. No bulk file exists: catalog is Elasticsearch-backed (target_bucket index 'mca'); format=csv is clamped identically; dmspublic download endpoint is OPTIONS-only and the legacy v1 datastore API returns HTTP 500.",
+  "note": "Real MCA struck-off CINs across 4 RoCs. Dataset has no PAN/DIN columns (pan left empty). 129,694 Strike Off rows exist in the Delhi resource alone; a registered (free) data.gov.in key removes the 10-row clamp for production. RESERVED persona ids filtered; CINs validated against ^[LU]d{5}[A-Z]{2}d{4}[A-Z]{3}d{6}$.",
+  "freshness": "2021-03-31"
+}

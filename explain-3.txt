@@ -1,0 +1,64 @@
+The problem (in one line)
+
+The bank can't tell healthy small businesses apart from risky ones — because both fail to produce the old-school paperwork banks ask for. So the bank wrongly rejects good borrowers AND has no reliable way to spot/price the genuinely risky ones.
+
+And the blind spot cuts both ways: businesses that look clean on paper can be quietly failing — the bank can't see that either. Old paperwork mis-measures in both directions.
+
+Why it happens:
+- A bank normally judges a loan applicant using: audited balance sheets, income-tax returns, and a credit score (CIBIL).
+- Tons of small businesses (called MSMEs — think kirana stores, small traders, tiny manufacturers) don't have these. They're new, or they run on cash/UPI and never kept formal books, or never took a loan before ("new to credit").
+- No paperwork → the bank can't measure them → auto-reject.
+- Some MSMEs do have documents — but messy, outdated, or dressed-up ones the bank can't fully trust. Same blindness, opposite failure: risky borrowers can sail through on paper.
+- So good borrowers get turned away, some bad ones get in, the bank's portfolio quality suffers, and "financial inclusion" fails.
+
+The key insight: these businesses do leave a digital money-trail elsewhere — it's just scattered and nobody stitches it together. That same trail reveals BOTH strength (approve, lend more) and stress (decline, or lend smaller / priced-for-risk). The win isn't "approve more" — it's a truer signal in both directions: onboard the invisible-but-healthy AND catch the looks-fine-but-failing.
+
+Real-world example
+
+Ramesh runs a 3-year-old auto-parts shop in Pune.
+- Takes ₹8 lakh/month through UPI, files his GST (sales tax) regularly, pays 4 employees (so he's in the EPFO/provident-fund system).
+- But he's never taken a loan → no credit score. He wants ₹15 lakh to expand.
+- ❌ Old way: Bank asks for audited financials + credit score. Ramesh has neither → rejected. Bank just lost a genuinely good customer.
+- ✅ Our way: With Ramesh's permission, we pull his scattered data, stitch it into a "Financial Health Card," and the bank sees: "Score 78/100, steady cash flow, on-time GST, low risk — approve ₹12L." Done in minutes. A genuinely good customer, saved.
+
+The other half (why the bank actually adopts this):
+
+Suresh runs a similar-looking shop and even has neatly typed financials.
+- On paper he looks fine — old checks might approve him.
+- ❌ But the real trail tells another story: UPI inflows dropping 20% over 6 months, three bounced payments last quarter, GST filed late twice. The dressed-up paperwork hid it.
+- ✅ Our way flags it: "Score 41/100 — declining sales, cash-flow stress. Decline, or lend ₹4L with monitoring." The bank just avoided a loan that would have gone bad.
+
+Same tool, opposite verdicts — that's the point. It doesn't just say "yes" more often; it says the RIGHT thing more often. That protects the bank's portfolio, which is what makes them trust it and roll it out.
+
+How we solve it — step by step
+
+Step 1 — Collect the scattered data (with the person's consent)
+- GST → how much the business actually sells.
+- UPI + bank statements → daily money in and out (via Account Aggregator / "AA" = RBI's one-click "share my bank data with permission" system).
+- EPFO → how many employees / payroll (proof it's a real, running business).
+
+Step 2 — Turn messy raw data into meaningful signals
+- Sales going up, flat, or down?
+- Is cash flow steady or erratic?
+- Any bounced payments / overdrafts?
+- Does he file GST on time (= disciplined)?
+- Are employees stable?
+
+Step 3 — Score it — this is the AI/ML brain
+- A model combines all those signals into one Health Score (like a credit score, but built from this alternate data instead of paperwork).
+- "Multidimensional" = it also shows sub-scores: cash flow, growth, stability, compliance.
+
+Step 4 — Explain the score (so the bank trusts it)
+- Not just a number — show the why: "Strong: steady UPI inflow, on-time GST. Watch: seasonal dip around monsoon."
+- A loan officer can now defend the decision. (This is the "visualize strengths and risks" part.)
+
+Step 5 — Decide instantly and plug into the bank
+- Output: eligible or not, how much, at what risk level — in minutes, not weeks.
+- Connect it to ULI/OCEN (the digital pipes banks use to actually issue loans) so it flows into their real system.
+
+What we actually build for the hackathon
+
+- A web app: feed in an MSME's data (the hackathon gives you synthetic datasets to use) → it shows the Health Card: the score + the breakdown + the approve/reject verdict.
+- Under the hood: data connectors (Step 1) → signal builder (Step 2) → scoring model (Step 3) → explanation layer (Step 4).
+
+In one sentence: we build a tool that reads a small business's real digital money-trail and instantly tells the bank the truth about it — "healthy, lend more" or "stressed, hold back" — so good borrowers stop getting rejected for lacking old paperwork AND risky ones stop slipping through on dressed-up paperwork, all while the bank's loan book gets healthier.

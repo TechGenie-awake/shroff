@@ -1,0 +1,44 @@
+{
+  "source": "OpenSanctions bulk India datasets (in_nse_debarred FULL/uncapped, in_mha_banned, in_sansad PEPs, consolidated sanctions filtered countries=in)",
+  "url": "https://data.opensanctions.org/datasets/latest/<dataset>/targets.simple.csv",
+  "status": "real",
+  "rows": {
+    "names__opensanctions.csv": 20853,
+    "pan__opensanctions.csv": 11631,
+    "gstin__opensanctions.csv": 14
+  },
+  "access_method": "direct HTTPS GET of targets.simple.csv bulk exports with Chrome UA (no auth, CC BY-NC); consolidated 'sanctions' collection (66.5MB) filtered to rows whose countries token list contains 'in'",
+  "note": "Per-dataset breakdown: {\"nse_debarred\": {\"file\": \"in_nse_debarred.simple.csv\", \"rows_in_file\": 15328, \"names\": 14829, \"pans\": 11604, \"gstins\": 0}, \"uapa_banned\": {\"file\": \"in_mha_banned.simple.csv\", \"rows_in_file\": 146, \"names\": 144, \"pans\": 0, \"gstins\": 0}, \"pep\": {\"file\": \"in_sansad.simple.csv\", \"rows_in_file\": 5698, \"names\": 5649, \"pans\": 0, \"gstins\": 0}, \"intl_sanction\": {\"file\": \"sanctions.simple.csv\", \"rows_in_file\": 71505, \"names\": 231, \"pans\": 27, \"gstins\": 14}}. list_type slugs: nse_debarred / uapa_banned / pep / intl_sanction. PANs pulled from the 'identifiers' column (regex + structural validation incl. 4th-char entity code); RESERVED persona ids skipped; de-duped on PAN / GSTIN / (normalized-name, list_type). amount_inr left empty (not present in simple CSV); gstin state decoded deterministically from the GSTIN's own 2-digit state code.",
+  "freshness": "OpenSanctions rebuilds daily; downloaded 2026-07-11T02:34:14",
+  "license": "CC BY-NC 4.0 (OpenSanctions)",
+  "datasets": {
+    "nse_debarred": {
+      "file": "in_nse_debarred.simple.csv",
+      "rows_in_file": 15328,
+      "names": 14829,
+      "pans": 11604,
+      "gstins": 0
+    },
+    "uapa_banned": {
+      "file": "in_mha_banned.simple.csv",
+      "rows_in_file": 146,
+      "names": 144,
+      "pans": 0,
+      "gstins": 0
+    },
+    "pep": {
+      "file": "in_sansad.simple.csv",
+      "rows_in_file": 5698,
+      "names": 5649,
+      "pans": 0,
+      "gstins": 0
+    },
+    "intl_sanction": {
+      "file": "sanctions.simple.csv",
+      "rows_in_file": 71505,
+      "names": 231,
+      "pans": 27,
+      "gstins": 14
+    }
+  }
+}

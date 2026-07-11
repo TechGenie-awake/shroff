@@ -1,0 +1,9 @@
+{
+  "source": "MahaGST — Category I Non-Genuine Tax Payers (NGTPs), ab-initio registration cancellation",
+  "url": "https://www.mahagst.gov.in/public/uploads/goodstax/1782294005_Compilation of Category I NGTPs- State-assigned NGTPs with ab-initio registration cancellation as on 31.05.2026 (1).xlsx",
+  "status": "real",
+  "rows": 11410,
+  "access_method": "Old /en/list-of-non-genuine-tax-payers URL 404s. The current NGTP compilation is linked directly on the MahaGST home page (https://www.mahagst.gov.in/en) as a .xlsx under /public/uploads/goodstax/. Fetched with full Chrome headers (curl 200, 875 KB), parsed with openpyxl (ephemeral `uv run --with openpyxl`). Sheet '11410 GSTIN', header row 2 (SR.NO, GSTIN, UNQ NGTP CODE, TRADE_NAME, RC_DATE, RCC_DATE, ASSIGNED_TO, ZONE, DIVISION).",
+  "note": "All 11,410 GSTINs from the official published list, structurally validated (validate_gstin), de-duplicated, RESERVED-filtered (0 collisions, 0 structurally invalid). trade_name = TRADE_NAME column verbatim. state hard-set to 'Maharashtra' (list is Maharashtra-only). reason names the NGTP category. This is the real ~10.8k+ list the SOURCES.md sample was mirroring.",
+  "freshness": "List as on 31.05.2026 (published on MahaGST home page)"
+}

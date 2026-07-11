@@ -1,0 +1,9 @@
+{
+  "source": "RBI Alert List — entities unauthorised to deal in forex / operate ETPs (FEMA 1999)",
+  "url": "https://rbi.org.in/scripts/bs_viewcontent.aspx?Id=4235",
+  "status": "real",
+  "rows": 95,
+  "access_method": "The task-pointer BS_ViewForexAlertList.aspx now 302s to an ASP.NET error page (dead). The live Alert List is the content page bs_viewcontent.aspx?Id=4235, which renders the entities as a static HTML <table class='tablebg'> (Sr. No / Name / Website) directly in the initial GET — no postback needed. Fetched with full Chrome headers (curl 200, 70 KB), parsed the table with a stdlib regex + html.unescape. Note: the PDF still linked on that page (ALERTLIST10022023...PDF) is a stale 34-entity 2023 version; the inline HTML table is the authoritative current list.",
+  "note": "All 95 entity names from the current table, extracted verbatim (name_raw), de-duplicated on normalize_name (0 dups). list_type='rbi_alert_list', authority='RBI Alert List — unauthorised forex/ETP platforms'. This is the real ~95-name list the SOURCES.md sample was mirroring (upgraded from 40 synthetic to 95 real).",
+  "freshness": "Updated as on November 19, 2025 (date shown on the RBI page)"
+}

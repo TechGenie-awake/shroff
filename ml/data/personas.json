@@ -1,0 +1,248 @@
+[
+  {
+    "id": "RAMESH001",
+    "name": "Ramesh Kumar",
+    "business": "Ramesh Kirana & General Stores",
+    "city": "Pune",
+    "segment": "kirana_retail",
+    "requested_amount_inr": 1500000,
+    "blurb": "The invisible-but-healthy borrower: growing kirana store, ~\u20b98L/mo bank inflows (+1.5%/mo), UPI-heavy, 23/24 on-time GST, GST\u2248bank. No credit history \u2014 but the cash flows say APPROVE.",
+    "profile": {
+      "name": "Ramesh Kirana & General Stores",
+      "legal_name": "Ramesh Kumar",
+      "entity_type": "proprietorship",
+      "sector": "kirana_retail",
+      "city": "Pune",
+      "state_code": "27",
+      "pan": "ABCPR3456K",
+      "gstin": "27ABCPR3456K1Z5",
+      "cin": null,
+      "promoter_name": "Ramesh Kumar",
+      "promoter_pan": "ABCPR3456K",
+      "promoter_din": null,
+      "udyam": "UDYAM-MH-26-0012345",
+      "incorporated_on": "2016-04-11",
+      "requested_amount_inr": 1500000,
+      "default_12m": 0,
+      "is_persona": 1,
+      "msme_id": "RAMESH001"
+    },
+    "consent_artefact": {
+      "ver": "2.0.0",
+      "txnid": "25b8ce56-a2ca-5fb2-b90c-121f274ea43c",
+      "consentId": "986fa08f-2aa9-5dfe-bced-31fc3f171f03",
+      "ConsentHandle": "64ee7ad9-86b7-5376-a8d1-198a0e3419e6",
+      "status": "ACTIVE",
+      "createTimestamp": "2026-06-28T10:15:00.000Z",
+      "ConsentDetail": {
+        "consentStart": "2026-06-28T10:15:00.000Z",
+        "consentExpiry": "2027-06-28T10:15:00.000Z",
+        "consentMode": "STORE",
+        "fetchType": "PERIODIC",
+        "consentTypes": [
+          "PROFILE",
+          "SUMMARY",
+          "TRANSACTIONS"
+        ],
+        "fiTypes": [
+          "DEPOSIT",
+          "GSTR1_3B"
+        ],
+        "DataConsumer": {
+          "id": "FIU-SHROFF-IDBI",
+          "type": "FIU"
+        },
+        "Customer": {
+          "id": "ramesh.kumar@okaxis"
+        },
+        "Purpose": {
+          "code": "103",
+          "refUri": "https://api.rebit.org.in/aa/purpose/103.xml",
+          "text": "Aggregated statement for loan underwriting",
+          "Category": {
+            "type": "Personal Finance"
+          }
+        },
+        "FIDataRange": {
+          "from": "2024-07-01T00:00:00.000Z",
+          "to": "2026-06-30T23:59:59.000Z"
+        },
+        "DataLife": {
+          "unit": "MONTH",
+          "value": 12
+        },
+        "Frequency": {
+          "unit": "MONTH",
+          "value": 1
+        },
+        "DataFilter": []
+      },
+      "is_sample": true
+    },
+    "history_months": 24
+  },
+  {
+    "id": "SURESH002",
+    "name": "Suresh Mehta",
+    "business": "Suresh Trading Co.",
+    "city": "Mumbai",
+    "segment": "trader",
+    "requested_amount_inr": 1000000,
+    "blurb": "Clean-on-paper-but-risky: inflows down ~20% in 6 months, 3 bounces last quarter, GST declared ~1.4x bank inflows, self-transfer round-tripping, 78% sales to top-3 buyers incl. a distressed counterparty.",
+    "profile": {
+      "name": "Suresh Trading Co.",
+      "legal_name": "Suresh Mehta",
+      "entity_type": "proprietorship",
+      "sector": "trader",
+      "city": "Mumbai",
+      "state_code": "27",
+      "pan": "AKLPM8765D",
+      "gstin": "27AKLPM8765D1Z3",
+      "cin": null,
+      "promoter_name": "Suresh Mehta",
+      "promoter_pan": "AKLPM8765D",
+      "promoter_din": null,
+      "udyam": "UDYAM-MH-19-0045678",
+      "incorporated_on": "2014-08-20",
+      "requested_amount_inr": 1000000,
+      "default_12m": 1,
+      "is_persona": 1,
+      "msme_id": "SURESH002"
+    },
+    "consent_artefact": {
+      "ver": "2.0.0",
+      "txnid": "8523e3cc-4495-5fbb-8568-ddd1ffcedd5c",
+      "consentId": "c97d1331-bdfc-5f4e-9371-c910b494310c",
+      "ConsentHandle": "8335a65d-160b-56f3-8fb2-8ee49405facc",
+      "status": "ACTIVE",
+      "createTimestamp": "2026-06-28T10:15:00.000Z",
+      "ConsentDetail": {
+        "consentStart": "2026-06-28T10:15:00.000Z",
+        "consentExpiry": "2027-06-28T10:15:00.000Z",
+        "consentMode": "STORE",
+        "fetchType": "PERIODIC",
+        "consentTypes": [
+          "PROFILE",
+          "SUMMARY",
+          "TRANSACTIONS"
+        ],
+        "fiTypes": [
+          "DEPOSIT",
+          "GSTR1_3B"
+        ],
+        "DataConsumer": {
+          "id": "FIU-SHROFF-IDBI",
+          "type": "FIU"
+        },
+        "Customer": {
+          "id": "suresh.mehta@okhdfcbank"
+        },
+        "Purpose": {
+          "code": "103",
+          "refUri": "https://api.rebit.org.in/aa/purpose/103.xml",
+          "text": "Aggregated statement for loan underwriting",
+          "Category": {
+            "type": "Personal Finance"
+          }
+        },
+        "FIDataRange": {
+          "from": "2024-07-01T00:00:00.000Z",
+          "to": "2026-06-30T23:59:59.000Z"
+        },
+        "DataLife": {
+          "unit": "MONTH",
+          "value": 12
+        },
+        "Frequency": {
+          "unit": "MONTH",
+          "value": 1
+        },
+        "DataFilter": []
+      },
+      "is_sample": true
+    },
+    "history_months": 24
+  },
+  {
+    "id": "PHOENIX003",
+    "name": "Vikram Malhotra",
+    "business": "Nexon Trading Pvt Ltd",
+    "city": "Delhi",
+    "segment": "trader",
+    "requested_amount_inr": 2000000,
+    "blurb": "The phoenix borrower: 14-month-old company, clean thin financials \u2014 but the entity graph links its promoter to a struck-off, wilful-defaulter shell. Score says maybe; graph says REFER.",
+    "profile": {
+      "name": "Nexon Trading Pvt Ltd",
+      "legal_name": "Nexon Trading Private Limited",
+      "entity_type": "pvt_ltd",
+      "sector": "trader",
+      "city": "Delhi",
+      "state_code": "07",
+      "pan": "AAECN1234F",
+      "gstin": "07AAECN1234F1Z2",
+      "cin": "U51909DL2025PTC412345",
+      "promoter_name": "Vikram Malhotra",
+      "promoter_pan": "AEXPM4521C",
+      "promoter_din": "08234567",
+      "udyam": "UDYAM-DL-25-0067890",
+      "incorporated_on": "2025-05-02",
+      "requested_amount_inr": 2000000,
+      "default_12m": 0,
+      "is_persona": 1,
+      "msme_id": "PHOENIX003"
+    },
+    "consent_artefact": {
+      "ver": "2.0.0",
+      "txnid": "81635c00-3d13-555b-aa2f-de6ccb63dbad",
+      "consentId": "b5c2cddd-323a-55d1-a427-07b6004df5ab",
+      "ConsentHandle": "2ece60af-30ef-57e5-a43c-0a371cc94c5e",
+      "status": "ACTIVE",
+      "createTimestamp": "2026-06-28T10:15:00.000Z",
+      "ConsentDetail": {
+        "consentStart": "2026-06-28T10:15:00.000Z",
+        "consentExpiry": "2027-06-28T10:15:00.000Z",
+        "consentMode": "STORE",
+        "fetchType": "PERIODIC",
+        "consentTypes": [
+          "PROFILE",
+          "SUMMARY",
+          "TRANSACTIONS"
+        ],
+        "fiTypes": [
+          "DEPOSIT",
+          "GSTR1_3B"
+        ],
+        "DataConsumer": {
+          "id": "FIU-SHROFF-IDBI",
+          "type": "FIU"
+        },
+        "Customer": {
+          "id": "accounts.nexon@icici"
+        },
+        "Purpose": {
+          "code": "103",
+          "refUri": "https://api.rebit.org.in/aa/purpose/103.xml",
+          "text": "Aggregated statement for loan underwriting",
+          "Category": {
+            "type": "Personal Finance"
+          }
+        },
+        "FIDataRange": {
+          "from": "2024-07-01T00:00:00.000Z",
+          "to": "2026-06-30T23:59:59.000Z"
+        },
+        "DataLife": {
+          "unit": "MONTH",
+          "value": 12
+        },
+        "Frequency": {
+          "unit": "MONTH",
+          "value": 1
+        },
+        "DataFilter": []
+      },
+      "is_sample": true
+    },
+    "history_months": 14
+  }
+]

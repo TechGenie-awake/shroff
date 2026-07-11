@@ -1,0 +1,12 @@
+# Track B screening module — extra dependencies for the integration agent.
+#
+# NONE. The module core (pan.py, registry.py, graph.py, seed_db.py) is
+# Python-stdlib-only: sqlite3, csv, json, re, urllib.request, unicodedata,
+# difflib. Verified with system python3 (3.14).
+#
+# router.py imports `fastapi`, which Track A already provides in the shared
+# ml/ venv — nothing to add.
+#
+# Optional (NOT required, only if someone later wants to parse the MahaGST
+# non-genuine-taxpayer XLSX for real instead of the synthetic mirror):
+# openpyxl
