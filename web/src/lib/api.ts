@@ -37,7 +37,7 @@ export interface Sourced<T> {
   source: DataSource;
 }
 
-const TIMEOUT_MS = 2500;
+const TIMEOUT_MS = 15000;
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const ctrl = new AbortController();
