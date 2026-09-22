@@ -34,3 +34,10 @@ Thumbs.db
 
 # throwaway API captures
 ml/artifacts/capture/
+
+# internal team docs — kept local, not for judges
+TODO.md
+given/round-2/
+docs/SANDBOX-FORM-ANSWERS.md
+docs/INFRA-AWS.md
+docs/TECHNICAL-WALKTHROUGH.md
