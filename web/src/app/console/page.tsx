@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DataSourceChip } from "@/components/data-source";
+import { DocumentUpload } from "@/components/document-upload";
 import { Stamp } from "@/components/stamp";
 
 interface RowData {
@@ -166,6 +167,7 @@ export default function ConsolePage() {
       </header>
 
       <LiveLookup />
+      <DocumentUpload />
 
       {/* stat tiles */}
       <div

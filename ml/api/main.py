@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import pandas as pd
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 
 from api import schemas
 from api.decision import compute_ews, decide, run_screening, supply_chain_overlay
+from api.documents import DocumentParseError, generate_sample_zip, parse_uploaded_documents
 from api.live_intake import (
     LiveIntakeError,
     consent_artefact as live_consent_artefact,
@@ -193,6 +195,53 @@ def score_live(req: schemas.LiveScoreRequest) -> dict:
     /api/ocen/offer/{id} all transparently work for the id this returns too."""
     msme_id = _canonical_live_id(req.identifier)
     return _score_payload(msme_id, requested_amount_inr=req.requested_amount_inr)
+
+
+# ---- Document upload demo: download sample files, upload them back, get scored ----
+@app.get("/api/documents/sample")
+def documents_sample(identifier: str, requested_amount_inr: int | None = None) -> Response:
+    """A downloadable ZIP (business_profile.csv + monthly_history.csv) for the given
+    GSTIN/PAN — the same simulated data /api/score/live would use, handed over as
+    files so the upload flow below has something real to parse. Edit a value and
+    re-upload: the score reflects the file, not a fresh simulation."""
+    try:
+        zip_bytes, filename = generate_sample_zip(identifier, requested_amount_inr)
+    except LiveIntakeError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    return Response(
+        content=zip_bytes, media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+
+@app.post("/api/documents/upload", response_model=schemas.ScoreResponse,
+          response_model_exclude_none=True)
+async def documents_upload(
+    business_profile: UploadFile = File(...),
+    monthly_history: UploadFile = File(...),
+) -> dict:
+    """Parse the two uploaded CSVs and score EXACTLY what's in them — no
+    re-simulation. This is the "live processing" demo: registry + entity-graph
+    checks run on the real negative-registry data (ml/screening/registry.db);
+    the financials are whatever the uploaded files say."""
+    try:
+        profile_bytes = await business_profile.read()
+        monthly_bytes = await monthly_history.read()
+        profile, g = parse_uploaded_documents(profile_bytes, monthly_bytes)
+    except DocumentParseError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    eng = get_engine()
+    cp_top1 = float(g["top3_buyer_share"].tail(12).mean()) * 0.55
+    feats = compute_firm_features(g, cp_top1, 8.0)
+    x = pd.DataFrame([feats])[FEATURE_NAMES]
+    payload = _assemble_response(profile["msme_id"], profile, g, x, eng, supply_from_engine=False)
+    payload["simulated"] = True
+    payload["simulation_note"] = (
+        "Scored from the two uploaded documents, not re-simulated — edit "
+        "monthly_history.csv and re-upload to see the score change. Underlying "
+        "figures trace back to a labeled simulation pending IDBI's real "
+        "GSTN/Bank-AA/EPFO sandbox; registry + entity-graph checks are real.")
+    return payload
 
 
 # ---- Lending rails (output side): OCEN loan offer + adapter status ----

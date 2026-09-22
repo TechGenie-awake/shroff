@@ -218,6 +218,45 @@ export async function postScoreLive(
   });
 }
 
+/**
+ * GET /api/documents/sample — the URL for the downloadable sample-documents
+ * ZIP (business_profile.csv + monthly_history.csv) for a given GSTIN/PAN.
+ * A plain URL, not a fetch: the browser's native download handling (from the
+ * server's Content-Disposition header) is simpler and more reliable than
+ * fetch+blob for a file download.
+ */
+export function sampleDocumentsUrl(
+  identifier: string,
+  requestedAmountInr?: number
+): string {
+  const qs = new URLSearchParams({ identifier: identifier.trim().toUpperCase() });
+  if (requestedAmountInr) qs.set("requested_amount_inr", String(requestedAmountInr));
+  return `${API_BASE}/api/documents/sample?${qs.toString()}`;
+}
+
+/**
+ * POST /api/documents/upload — parse the two uploaded CSVs and score EXACTLY
+ * what's in them (no re-simulation). Throws with the server's 422 detail
+ * message on a malformed file, since that's meant to be shown to the user.
+ */
+export async function postDocumentsUpload(
+  businessProfile: File,
+  monthlyHistory: File
+): Promise<ScoreResponse> {
+  const form = new FormData();
+  form.append("business_profile", businessProfile);
+  form.append("monthly_history", monthlyHistory);
+  const res = await fetch(`${API_BASE}/api/documents/upload`, {
+    method: "POST",
+    body: form,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.detail ?? `Upload failed (HTTP ${res.status})`);
+  }
+  return (await res.json()) as ScoreResponse;
+}
+
 /** Resolve the graph-walk PAN for an msme id (profile PAN when live). */
 export function panForMsme(id: string, profilePan?: string): string {
   return profilePan ?? graphPanByMsme[id] ?? id;
