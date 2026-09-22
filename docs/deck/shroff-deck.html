@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SHROFF · IDBI Innovate 2026 · Track 03 · Proof of Concept</title>
+<style>
+  :root{
+    --teal:#006a58; --teal-dark:#004d40; --teal-ink:#0b3a33;
+    --orange:#f37021; --amber:#b45309;
+    --ink:#1a2321; --muted:#5b6b67; --line:#dbe5e2;
+    --paper:#ffffff; --wash:#f2f7f5; --wash2:#e8f1ee;
+    --good:#0e7a4d; --bad:#b3261e; --warn:#a05a00;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{background:#cfd8d5}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{size:13.333in 7.5in;margin:0}
+  .slide{width:13.333in;height:7.5in;background:var(--paper);position:relative;overflow:hidden;page-break-after:always;break-after:page;display:flex;flex-direction:column;margin:0 auto}
+  @media screen{.slide{margin:24px auto;box-shadow:0 4px 24px rgba(0,0,0,.18)}}
+
+  /* chrome shared by content slides */
+  .band-top{height:.14in;background:linear-gradient(90deg,var(--teal) 0 62%,var(--orange) 62% 100%);flex:none}
+  .head{padding:.28in .55in .12in;flex:none;display:flex;align-items:baseline;justify-content:space-between;gap:.3in}
+  .head h2{font-family:Georgia,'Times New Roman',serif;font-size:.42in;font-weight:700;color:var(--teal-dark);letter-spacing:-.01em}
+  .head .tag{font-size:.14in;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+  .body{padding:.1in .55in .2in;flex:1;min-height:0;display:flex;flex-direction:column;gap:.16in}
+  .foot{flex:none;padding:.1in .55in .16in;display:flex;justify-content:space-between;font-size:.13in;color:var(--muted);border-top:1px solid var(--line)}
+  .foot b{color:var(--teal-dark);font-weight:600}
+
+  .lead{font-size:.21in;line-height:1.5;color:var(--ink);max-width:11.5in}
+  .lead strong{color:var(--teal-dark)}
+  .cols{display:flex;gap:.3in;flex:1;min-height:0}
+  .col{flex:1;min-width:0;display:flex;flex-direction:column;gap:.14in}
+
+  .panel{background:var(--wash);border:1px solid var(--line);border-radius:.09in;padding:.16in .2in}
+  .panel h3{font-size:.15in;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:.09in}
+  .panel p,.panel li{font-size:.165in;line-height:1.45;color:var(--ink)}
+  .panel ul{list-style:none}
+  .panel li{padding-left:.22in;position:relative;margin-bottom:.06in}
+  .panel li::before{content:"";position:absolute;left:.02in;top:.095in;width:.09in;height:.09in;border-radius:.02in;background:var(--orange)}
+  .panel li b{color:var(--teal-dark)}
+
+  table{border-collapse:collapse;width:100%}
+  th,td{font-size:.165in;padding:.075in .14in;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--teal-dark);color:#fff;font-weight:600;font-size:.15in;letter-spacing:.04em}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  tr:nth-child(even) td{background:var(--wash)}
+
+  .chip{display:inline-block;font-size:.13in;font-weight:700;letter-spacing:.06em;padding:.03in .12in;border-radius:.2in;vertical-align:middle}
+  .chip.g{background:#d9efe4;color:var(--good)}
+  .chip.r{background:#f8dedc;color:var(--bad)}
+  .chip.y{background:#f6ead6;color:var(--warn)}
+
+  .fill-me{background:#fff7e6;border:1.5px dashed var(--amber);color:var(--amber);padding:.02in .1in;border-radius:.05in;font-weight:600}
+
+  .flowrow{display:flex;align-items:stretch;gap:.12in}
+  .fbox{background:var(--wash2);border:1.5px solid var(--teal);border-radius:.08in;padding:.12in .14in;flex:1;text-align:center;display:flex;flex-direction:column;justify-content:center}
+  .fbox b{font-size:.16in;color:var(--teal-dark);display:block}
+  .fbox span{font-size:.13in;color:var(--muted);line-height:1.35;display:block;margin-top:.03in}
+  .farr{align-self:center;color:var(--orange);font-size:.26in;font-weight:700;flex:none}
+  .fbox.hot{background:var(--teal-dark);border-color:var(--teal-dark)}
+  .fbox.hot b{color:#fff}.fbox.hot span{color:#bfe0d8}
+
+  .shot{border:1px solid var(--line);border-radius:.08in;overflow:hidden;background:var(--paper);display:flex;flex-direction:column}
+  .shot img{width:100%;display:block;object-fit:cover;object-position:top;flex:1;min-height:0}
+  .shot figcaption{margin-top:auto}
+  .shot figcaption{font-size:.13in;color:var(--muted);padding:.06in .12in;background:var(--paper);border-top:1px solid var(--line)}
+
+  .big{font-family:Georgia,serif;font-size:.5in;color:var(--teal-dark);font-weight:700;line-height:1}
+  .big small{font-size:.15in;color:var(--muted);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-weight:400;display:block;margin-top:.05in;letter-spacing:.02em}
+  .stat{background:var(--wash);border:1px solid var(--line);border-radius:.09in;padding:.14in .18in;flex:1}
+
+  code,.mono{font-family:"SF Mono",Menlo,Consolas,monospace;font-size:.155in;color:var(--teal-dark)}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ SLIDE 1 · TITLE + TEAM DETAILS ═══════════ -->
+<section class="slide" style="background:linear-gradient(135deg,var(--teal-ink) 0%,var(--teal-dark) 55%,var(--teal) 100%);color:#fff;justify-content:center">
+  <div style="position:absolute;top:0;left:0;right:0;height:.14in;background:var(--orange)"></div>
+  <div style="padding:0 .9in">
+    <div style="font-size:.16in;letter-spacing:.28em;text-transform:uppercase;color:#8fd0c2;margin-bottom:.2in">IDBI Innovate 2026 · Proof of Concept / Idea Submission</div>
+    <h1 style="font-family:Georgia,serif;font-size:1.15in;line-height:.95;letter-spacing:-.02em">SHROFF</h1>
+    <p style="font-size:.3in;margin-top:.14in;color:#dff0ea;font-family:Georgia,serif;font-style:italic">The MSME Financial Health Card: a digital shroff for the credit-invisible.</p>
+    <p style="font-size:.18in;margin-top:.18in;color:#a8cfc5;max-width:9.5in;line-height:1.5">Alternate-data credit decisioning: reads a business's consented GST · UPI/bank (AA) · EPFO money-trail, scores it 300–900 with signed reasons, screens ~45,000 real government registry rows for phoenix fraud, and emits an OCEN 4.0 loan offer.</p>
+    <div style="margin-top:.4in;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);border-radius:.1in;padding:.2in .28in;display:inline-block">
+      <table style="width:auto">
+        <tr><td style="border:none;background:none;color:#8fd0c2;font-size:.16in;padding:.04in .3in .04in 0">Team name</td><td style="border:none;background:none;color:#fff;font-size:.18in;font-weight:600;padding:.04in 0">SHROFF</td></tr>
+        <tr><td style="border:none;background:none;color:#8fd0c2;font-size:.16in;padding:.04in .3in .04in 0">Team leader</td><td style="border:none;background:none;color:#fff;font-size:.18in;font-weight:600;padding:.04in 0">Anshuman Atrey</td></tr>
+        <tr><td style="border:none;background:none;color:#8fd0c2;font-size:.16in;padding:.04in .3in .04in 0">Problem statement</td><td style="border:none;background:none;color:#fff;font-size:.18in;padding:.04in 0">Problem Statement 3: Financial Health Score</td></tr>
+      </table>
+    </div>
+  </div>
+  <div style="position:absolute;bottom:.3in;left:.9in;right:.9in;display:flex;justify-content:space-between;font-size:.14in;color:#8fd0c2">
+    <span>github.com/AnshumanAtrey/shroff</span><span>MSME Financial Health Card · July 2026</span>
+  </div>
+</section>
+
+<!-- ═══════════ SLIDE 2 · BRIEF ABOUT THE IDEA ═══════════ -->
+<section class="slide">
+  <div class="band-top"></div>
+  <div class="head"><h2>Brief about the idea</h2><span class="tag">SHROFF · Track 03</span></div>
+  <div class="body">
+    <p class="lead">Millions of Indian MSMEs (kirana stores, small traders, tiny manufacturers) are <strong>new-to-credit</strong>: they run on cash and UPI and never kept formal books. Banks judge them on audited statements, ITR and a CIBIL score they simply don't have, so viable businesses are auto-rejected. Meanwhile, some borrowers who <em>look</em> clean on paper are quietly failing, and get through.</p>
+    <div class="cols">
+      <div class="col"><div class="panel" style="flex:1">
+        <h3>The idea: tell the truth in both directions</h3>
+        <ul>
+          <li><b>Approve the invisible-but-healthy.</b> Read the business's real, <b>consented</b> digital money-trail (GST returns, UPI/bank flows via Account Aggregator, EPFO headcount) and score what the bureau can't see.</li>
+          <li><b>Catch the looks-fine-but-failing.</b> Compare GST-declared turnover against bank-verified inflows on the same ₹ axis; flag bounce streaks, sliding receipts, distressed buyers.</li>
+          <li><b>Catch the phoenix.</b> A spotless new company whose promoter's network reaches a struck-off / wilful-defaulter shell → deterministic REFER, regardless of score.</li>
+        </ul>
+      </div></div>
+      <div class="col"><div class="panel" style="flex:1">
+        <h3>What the bank receives</h3>
+        <ul>
+          <li>A <b>300–900 Financial Health Score</b> with four sub-scores: cash-flow · growth · stability · compliance.</li>
+          <li><b>Signed reason codes</b> (TreeSHAP): every point on the score has an auditable reason. <b>No LLM ever computes a number.</b></li>
+          <li>A verdict, <span class="chip g">APPROVE</span> <span class="chip y">REFER</span> <span class="chip r">DECLINE</span>, with amount &amp; tenure, emitted as an <b>OCEN 4.0-aligned loan offer</b> with risk-based pricing.</li>
+        </ul>
+        <p style="margin-top:.1in;font-style:italic;color:var(--muted)">Why "Shroff"? The traditional Indian banker who judged merchants by cash-flow and conduct, never paperwork. This is that instinct, rebuilt from alternate data.</p>
+      </div></div>
+    </div>
+  </div>
+  <div class="foot"><span><b>SHROFF</b> · IDBI Innovate 2026 · Track 03</span><span>2</span></div>
+</section>
+
+<!-- ═══════════ SLIDE 3 · OPPORTUNITIES / USP ═══════════ -->
+<section class="slide">
+  <div class="band-top"></div>
+  <div class="head"><h2>Opportunities &amp; USP</h2><span class="tag">How it differs · how it solves</span></div>
+  <div class="body">
+    <div class="cols">
+      <div class="col">
+        <div class="panel" style="flex:1"><h3>How is it different from existing ideas?</h3>
+          <ul>
+            <li><b>Two-sided decisioning.</b> Most inclusion tools only widen approval. SHROFF also tightens it: the same data catches clean-on-paper decliners, so the book gets <b>healthier, not just larger</b>.</li>
+            <li><b>Deterministic core, generative shell.</b> Monotonic-constrained LightGBM + TreeSHAP. Any LLM use is env-gated narrative only, regulator-defensible by construction.</li>
+            <li><b>A third signal nobody scores: the entity graph.</b> PAN-spine graph walk over real registries detects <b>phoenix fraud</b>: the promoter's network, not just the applicant.</li>
+            <li><b>Real registry data in the PoC.</b> ~45,000 genuine government rows (MahaGST, SEBI/NSE, CBDT, MCA, RBI, OpenSanctions), not mocked.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="panel"><h3>How it solves the Track 03 problem</h3>
+          <ul>
+            <li>High NTC/NTB rejection → scores the consented alternate-data trail the statement can't show.</li>
+            <li>No unified framework → one health card: score + sub-scores + screening + EWS + offer.</li>
+            <li>Slow onboarding → near-real-time API (&lt;100 ms/score), AA-consent native, ULI/OCEN adapter-ready.</li>
+          </ul>
+        </div>
+        <div class="panel" style="background:var(--teal-dark);border-color:var(--teal-dark)"><h3 style="color:#8fd0c2">USP in one line</h3>
+          <p style="color:#fff;font-size:.19in;font-family:Georgia,serif;font-style:italic">"Sees the invisible borrower, in both directions: approves the invisible-but-healthy, catches the looks-fine-but-failing, and refers the phoenix the score alone would have lent to."</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span><b>SHROFF</b> · IDBI Innovate 2026 · Track 03</span><span>3</span></div>
+</section>
+
+<!-- ═══════════ SLIDE 4 · FEATURES ═══════════ -->
+<section class="slide">
+  <div class="band-top"></div>
+  <div class="head"><h2>List of features offered by the solution</h2><span class="tag">All working in the MVP today</span></div>
+  <div class="body">
+    <div class="cols">
+      <div class="col"><div class="panel" style="flex:1"><h3>1 · Scoring &amp; explainability</h3>
+        <ul>
+          <li><b>300–900 health score</b> from ~45 engineered signals; 4 sub-scores (cash-flow · growth · stability · compliance) via monotonic LightGBM ensemble.</li>
+          <li><b>Calibrated 12-month PD</b> (isotonic) behind every score.</li>
+          <li><b>Signed TreeSHAP reason codes</b>: auditable, per-applicant.</li>
+          <li><b>What-if simulator</b>: how the score moves if inputs change.</li>
+          <li><b>Early-warning strip</b>: bounces, headcount drops, GST late/nil streaks.</li>
+        </ul>
+      </div></div>
+      <div class="col"><div class="panel" style="flex:1"><h3>2 · Screening &amp; fraud graph</h3>
+        <ul>
+          <li><b>Negative-registry screening</b> over ~45,000 real government rows: exact-ID hits (PAN/GSTIN/CIN/DIN) force the verdict; name-only hits stay advisory (bank AML pattern).</li>
+          <li><b>PAN-spine entity graph</b>: walks promoters, co-directors, shared addresses; <b>phoenix detection</b> auto-REFERs.</li>
+          <li><b>GST-vs-bank divergence view</b>: declared vs verified turnover, same ₹ axis.</li>
+        </ul>
+      </div></div>
+      <div class="col"><div class="panel" style="flex:1"><h3>3 · Lending rail &amp; console</h3>
+        <ul>
+          <li><b>OCEN 4.0-aligned loan offer</b>: risk-based pricing (Band A 13.77% → C 18.14%), reducing-balance EMI, tenure, validity.</li>
+          <li><b>AA consent artefacts</b> (ReBIT v2 shape): consented, not scraped.</li>
+          <li><b>Underwriter console</b>: portfolio ledger, health card, verdict stamp, entity graph.</li>
+          <li><b>Fixture fallback</b>: console degrades gracefully if the API is down; a chip shows LIVE vs FIXTURE.</li>
+        </ul>
+      </div></div>
+    </div>
+  </div>
+  <div class="foot"><span><b>SHROFF</b> · IDBI Innovate 2026 · Track 03</span><span>4</span></div>
+</section>
+
+<!-- ═══════════ SLIDE 5 · PROCESS FLOW ═══════════ -->
+<section class="slide">
+  <div class="band-top"></div>
+  <div class="head"><h2>Process flow</h2><span class="tag">Consent → score → screen → decide → offer</span></div>
+  <div class="body" style="justify-content:center;gap:.22in">
+    <div class="flowrow">
+      <div class="fbox"><b>1 · Consent</b><span>MSME grants AA consent (ReBIT v2 artefact logged)</span></div><div class="farr">→</div>
+      <div class="fbox"><b>2 · Data pull</b><span>GST returns · UPI/bank statements (AA) · EPFO headcount</span></div><div class="farr">→</div>
+      <div class="fbox"><b>3 · Feature engine</b><span>~45 signals: buffers, inflow trend, bounces, GST punctuality, divergence, buyer concentration</span></div><div class="farr">→</div>
+      <div class="fbox"><b>4 · Score</b><span>4 monotonic LightGBM sub-models → meta → isotonic PD → 300–900 + reasons</span></div>
+    </div>
+    <div class="flowrow">
+      <div class="fbox"><b>5 · Screen</b><span>~45k-row negative registry: exact-ID forces verdict; name-only advisory</span></div><div class="farr">→</div>
+      <div class="fbox"><b>6 · Graph walk</b><span>PAN-spine network: promoter → co-directors → shells; phoenix ⇒ REFER</span></div><div class="farr">→</div>
+      <div class="fbox hot"><b>7 · Decision</b><span>APPROVE / REFER / DECLINE + amount (Nayak 20% norm) + tenure; overlays can only worsen, never rescue</span></div><div class="farr">→</div>
+      <div class="fbox"><b>8 · OCEN offer</b><span>OCEN 4.0 loan-offer JSON, risk-based pricing → Loan Agent / IDBI LOS</span></div>
+    </div>
+    <div class="panel" style="flex:none"><h3>Three demo personas prove the flow end-to-end</h3>
+      <table>
+        <tr><th>Persona</th><th>Story</th><th>Score</th><th>Verdict</th></tr>
+        <tr><td><b>Ramesh Kirana</b></td><td>No CIBIL; 24 months clean bank + GST cash-flow</td><td class="num">769 · A</td><td><span class="chip g">APPROVE ₹12.5L @ 13.77%</span></td></tr>
+        <tr><td><b>Suresh Trading</b></td><td>GST declared ~37% above bank inflows; bounces, sliding receipts</td><td class="num">419 · E</td><td><span class="chip r">DECLINE</span></td></tr>
+        <tr><td><b>Nexon Trading</b></td><td>Tidy thin file; promoter's network reaches a struck-off shell</td><td class="num">678 · C</td><td><span class="chip y">REFER · phoenix graph</span></td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="foot"><span><b>SHROFF</b> · IDBI Innovate 2026 · Track 03</span><span>5</span></div>
+</section>
+
+<!-- ═══════════ SLIDE 6 · WIREFRAMES / MOCKS ═══════════ -->
+<section class="slide">
+  <div class="band-top"></div>
+  <div class="head"><h2>Wireframes: the Underwriter's Ledger</h2><span class="tag">Not mock-ups: the running product</span></div>
+  <div class="body">
+    <div class="cols">
+      <div class="col" style="flex:1.15">
+        <figure class="shot" style="flex:1"><img src="../ui/landing.png" alt="Landing" style="height:4.55in"><figcaption>Story page · the thesis: "sees the invisible borrower, in both directions"</figcaption></figure>
+      </div>
+      <div class="col" style="flex:1.15">
+        <figure class="shot" style="flex:1"><img src="../ui/console.png" alt="Console" style="height:4.55in"><figcaption>Portfolio console · all personas scored live; 1 approved / 1 referred / 1 declined</figcaption></figure>
+      </div>
+      <div class="col" style="flex:.9"><div class="panel" style="flex:1"><h3>Design language</h3>
+        <ul>
+          <li>A <b>ledger, not a dashboard</b>: verdict stamp, rupee-axis charts, reason codes read like an underwriter's file.</li>
+          <li>Gauge + radar for the 4 sub-scores; React Flow entity graph with flagged nodes in oxide red.</li>
+          <li><b>LIVE API / FIXTURE MODE</b> chip: honest about what's being served.</li>
+          <li>Every registry row carries an <code>is_sample</code> chip: real vs honestly-labeled sample.</li>
+        </ul>
+      </div></div>
+    </div>
+  </div>
+  <div class="foot"><span><b>SHROFF</b> · IDBI Innovate 2026 · Track 03</span><span>6</span></div>
+</section>
+
+<!-- ═══════════ SLIDE 7 · ARCHITECTURE ═══════════ -->
+<section class="slide">
+  <div class="band-top"></div>
+  <div class="head"><h2>Architecture</h2><span class="tag">Deterministic core · generative shell</span></div>
+  <div class="body" style="justify-content:center;gap:.2in">
+    <div class="flowrow" style="align-items:stretch">
+      <div class="col" style="flex:.95;gap:.12in">
+        <div class="fbox" style="flex:1"><b>Data sources (consented)</b><span>Account Aggregator: bank/UPI deposits · GSTR-1/3B · EPFO ECR</span></div>
+        <div class="fbox" style="flex:1"><b>Negative registries · SQLite</b><span>~45k real rows: MahaGST NGTP · SEBI/NSE debarred · CBDT defaulters · MCA struck-off · RBI alert · OpenSanctions</span></div>
+      </div>
+      <div class="farr">→</div>
+      <div class="col" style="flex:1.25;gap:.12in">
+        <div class="fbox hot" style="flex:1"><b>Scoring service · FastAPI · Python 3.12</b><span>feature engine (~45) → 4× monotonic LightGBM → meta-blend → isotonic PD → 300–900 score · TreeSHAP reason codes · what-if</span></div>
+        <div class="fbox" style="flex:1"><b>Screening + graph module</b><span>exact-ID registry match · PAN-spine graph walk · phoenix detector; deterministic overlays on the verdict</span></div>
+      </div>
+      <div class="farr">→</div>
+      <div class="col" style="flex:.95;gap:.12in">
+        <div class="fbox" style="flex:1"><b>Decision + OCEN rail</b><span>approve/refer/decline · Nayak-norm amount · risk-priced OCEN 4.0 offer JSON · DataSourceAdapter registry (AA live-capable · OCEN spec-conformant · ULI/EPFO adapter-ready)</span></div>
+        <div class="fbox" style="flex:1"><b>Underwriter console · Next.js</b><span>health card · gauge/radar · divergence chart · EWS · entity graph · lending-rail panel · fixture fallback</span></div>
+      </div>
+    </div>
+    <div class="panel" style="flex:none"><h3>Architecture principles</h3>
+      <ul style="columns:2;column-gap:.4in">
+        <li><b>No LLM on the decision path</b>: generative is env-gated narrative only; nothing generative computes a number.</li>
+        <li><b>Overlays only worsen</b>: screening/graph can downgrade a verdict, never rescue one.</li>
+        <li><b>Deterministic + reproducible</b>: seed-42 pipeline, artifacts trained offline, loaded at boot, &lt;100 ms/score.</li>
+        <li><b>Swappable data seam</b>: SQLite in the PoC; the adapter layer makes AA-live / Postgres a config change.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span><b>SHROFF</b> · IDBI Innovate 2026 · Track 03</span><span>7</span></div>
+</section>
+
+<!-- ═══════════ SLIDE 8 · TECHNOLOGIES ═══════════ -->
+<section class="slide">
+  <div class="band-top"></div>
+  <div class="head"><h2>Technologies used</h2><span class="tag">Boring where it should be · sharp where it counts</span></div>
+  <div class="body">
+    <table style="flex:none">
+      <tr><th style="width:1.9in">Layer</th><th>Stack</th><th style="width:4.4in">Why</th></tr>
+      <tr><td><b>Web console</b></td><td>Next.js (App Router, TypeScript) · Tailwind · Recharts · React Flow</td><td>Instant deploy link (Vercel); React Flow renders the entity graph natively</td></tr>
+      <tr><td><b>Scoring API</b></td><td>Python 3.12 · FastAPI · LightGBM (monotonic) · SHAP · scikit-learn</td><td>Monotone constraints = regulator-friendly; TreeSHAP = exact reason codes; &lt;100 ms/score</td></tr>
+      <tr><td><b>Screening + graph</b></td><td>Stdlib SQLite + PAN-spine graph walk (same service)</td><td>Multi-key relational lookups (PAN/GSTIN/CIN/DIN joins); deterministic, zero extra infra</td></tr>
+      <tr><td><b>Data (PoC)</b></td><td>Synthetic parquet (8,000 MSMEs, seed 42) + ~45k real registry rows in-repo</td><td>Judge-proof: no network, no accounts, cold-clone reproducible</td></tr>
+      <tr><td><b>Rails</b></td><td>AA (ReBIT v2 consent artefacts) · OCEN 4.0 offer schema · ULI adapter seam</td><td>Track 03 asks for ULI/OCEN/AA integration; honest status per adapter</td></tr>
+      <tr><td><b>Hosting</b></td><td>Vercel (web) · Render (API), free tier</td><td>Live deployment link for judging: <span class="mono">shroff.onrender.com</span></td></tr>
+    </table>
+    <div class="panel" style="flex:none"><h3>Production path (post-shortlist)</h3>
+      <p>Same pipeline, different plugs: Supabase Postgres for consent logs &amp; portfolio persistence · AA FIU-module live connection · retrain + recalibrate on IDBI sandbox portfolio outcomes · optional LLM narrative stays env-gated at the edge.</p>
+    </div>
+  </div>
+  <div class="foot"><span><b>SHROFF</b> · IDBI Innovate 2026 · Track 03</span><span>8</span></div>
+</section>
+
+<!-- ═══════════ SLIDE 9 · COST ═══════════ -->
+<section class="slide">
+  <div class="band-top"></div>
+  <div class="head"><h2>Estimated implementation cost</h2><span class="tag">PoC → pilot → production</span></div>
+  <div class="body">
+    <div class="cols">
+      <div class="col">
+        <div class="stat"><div class="big">₹0<small>PoC as demoed: free tiers (Vercel + Render), in-repo data, no API keys, no licences</small></div></div>
+        <div class="panel" style="flex:1"><h3>Why the PoC is ₹0</h3>
+          <ul>
+            <li>Open-source stack end-to-end (MIT-licensed repo).</li>
+            <li>Models train offline in ~40 s on a laptop; no GPU, no training cloud.</li>
+            <li>Registry data captured from public government sources.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col" style="flex:1.6">
+        <div class="panel" style="flex:1"><h3>Pilot &amp; production: indicative annual run-rate</h3>
+          <table>
+            <tr><th>Item</th><th>Pilot (~5k assessments/yr)</th><th>Scale (~100k/yr)</th></tr>
+            <tr><td>Cloud infra (API + web + Postgres)</td><td class="num">₹1–2 L</td><td class="num">₹8–15 L</td></tr>
+            <tr><td>AA data-pull fees (per-consent, market ₹5–25)</td><td class="num">₹0.5–1.5 L</td><td class="num">₹10–25 L</td></tr>
+            <tr><td>Registry/data subscriptions (MCA bulk, watchlists)</td><td class="num">₹1–3 L</td><td class="num">₹3–6 L</td></tr>
+            <tr><td>MLOps: monitoring, retraining, model validation</td><td class="num">₹2–4 L</td><td class="num">₹6–12 L</td></tr>
+            <tr><td><b>Total (ex-manpower)</b></td><td class="num"><b>₹5–10 L</b></td><td class="num"><b>₹27–58 L</b></td></tr>
+          </table>
+          <p style="margin-top:.1in;color:var(--muted)">Per-decision cost at scale: <b>~₹30–60</b>. Against the margin on a single healthy ₹12.5L working-capital loan, the system pays for itself within the first few hundred approvals it makes possible.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span><b>SHROFF</b> · IDBI Innovate 2026 · Track 03</span><span>9</span></div>
+</section>
+
+<!-- ═══════════ SLIDE 10 · PROTOTYPE SNAPSHOTS ═══════════ -->
+<section class="slide">
+  <div class="band-top"></div>
+  <div class="head"><h2>Snapshots of the prototype</h2><span class="tag">Three verdicts · one console</span></div>
+  <div class="body">
+    <div class="cols">
+      <div class="col"><figure class="shot" style="flex:1"><img src="../ui/card-ramesh-APPROVE.png" alt="Approve card" style="height:4.7in"><figcaption><b style="color:var(--good)">APPROVE</b> · Ramesh Kirana · 769/A · ₹12.5L @ 13.77% · invisible-but-healthy</figcaption></figure></div>
+      <div class="col"><figure class="shot" style="flex:1"><img src="../ui/card-suresh-DECLINE.png" alt="Decline card" style="height:4.7in"><figcaption><b style="color:var(--bad)">DECLINE</b> · Suresh Trading · 419/E · GST-vs-bank divergence + EWS red</figcaption></figure></div>
+      <div class="col"><figure class="shot" style="flex:1"><img src="../ui/card-phoenix-REFER.png" alt="Refer card" style="height:4.7in"><figcaption><b style="color:var(--warn)">REFER</b> · Nexon Trading · 678/C · phoenix graph hit overrides the score</figcaption></figure></div>
+    </div>
+  </div>
+  <div class="foot"><span><b>SHROFF</b> · IDBI Innovate 2026 · Track 03</span><span>10</span></div>
+</section>
+
+<!-- ═══════════ SLIDE 11 · BENCHMARKING ═══════════ -->
+<section class="slide">
+  <div class="band-top"></div>
+  <div class="head"><h2>Performance report &amp; benchmarking</h2><span class="tag">Untouched holdout · n=1,600 · reproducible (seed 42)</span></div>
+  <div class="body">
+    <div class="cols" style="flex:none">
+      <div class="stat"><div class="big">0.856<small>AUC (KS 0.575), combined score on holdout; LogReg regulator-view baseline 0.867 shipped side-by-side</small></div></div>
+      <div class="stat"><div class="big">7.6×<small>cleaner approved book: 1.36% bad-rate in approved A/B vs 10.24% population</small></div></div>
+      <div class="stat"><div class="big">94.5%<small>of eventual defaulters kept out of the approved book at a 41.4% approval rate</small></div></div>
+    </div>
+    <div class="cols">
+      <div class="col"><div class="panel" style="flex:1"><h3>Monotone rank-ordering by band (observed default rate)</h3>
+        <table>
+          <tr><th>Band</th><th class="num">n</th><th class="num">Score range</th><th class="num">Default rate</th></tr>
+          <tr><td><b>A</b></td><td class="num">637</td><td class="num">751–900</td><td class="num" style="color:var(--good)"><b>1.26%</b></td></tr>
+          <tr><td><b>B</b></td><td class="num">26</td><td class="num">689</td><td class="num">3.85%</td></tr>
+          <tr><td><b>C</b></td><td class="num">436</td><td class="num">660–678</td><td class="num">4.36%</td></tr>
+          <tr><td><b>D</b></td><td class="num">199</td><td class="num">542–578</td><td class="num">11.56%</td></tr>
+          <tr><td><b>E</b></td><td class="num">302</td><td class="num">300–483</td><td class="num" style="color:var(--bad)"><b>37.42%</b></td></tr>
+        </table>
+      </div></div>
+      <div class="col"><div class="panel" style="flex:1"><h3>Honesty box: what these numbers do and don't claim</h3>
+        <ul>
+          <li>Training set is <b>synthetic</b> (8,000 MSMEs encoding known risk economics). The numbers prove the <b>pipeline</b> (feature engine, monotone constraints, calibration, decisioning), not production performance.</li>
+          <li>In production the same pipeline retrains and recalibrates on the bank's own portfolio outcomes (sandbox phase).</li>
+          <li>Full reproducible proof page ships in-repo: <span class="mono">docs/pipeline-proof.html</span>; metrics in <span class="mono">ml/artifacts/</span>. Cold rebuild reproduces AUC/KS exactly.</li>
+          <li>All 3 personas verified through the <b>live deployed API</b>: input → score → verdict → OCEN offer.</li>
+        </ul>
+      </div></div>
+    </div>
+  </div>
+  <div class="foot"><span><b>SHROFF</b> · IDBI Innovate 2026 · Track 03</span><span>11</span></div>
+</section>
+
+<!-- ═══════════ SLIDE 12 · FUTURE DEVELOPMENT ═══════════ -->
+<section class="slide">
+  <div class="band-top"></div>
+  <div class="head"><h2>Future development</h2><span class="tag">From health card to lending platform</span></div>
+  <div class="body">
+    <div class="cols">
+      <div class="col"><div class="panel" style="flex:1"><h3>Prototype phase (if shortlisted · Aug 2–16)</h3>
+        <ul>
+          <li>Swap synthetic data for <b>IDBI sandbox APIs/datasets</b>; retrain + recalibrate via the same seed-locked pipeline.</li>
+          <li>AA FIU-module live connection (adapter seam already in place).</li>
+          <li>Scale MCA struck-off registry from 900 to the full <b>129,694 rows</b> (registered data.gov.in key).</li>
+          <li>Supabase Postgres for consent logs + portfolio persistence.</li>
+        </ul>
+      </div></div>
+      <div class="col"><div class="panel" style="flex:1"><h3>Platform roadmap</h3>
+        <ul>
+          <li><b>Continuous monitoring</b>: re-score the live book monthly from refreshed AA/GST pulls; EWS alerts to the RM.</li>
+          <li><b>Dynamic credit limits</b>: working-capital line moves with the verified cash-flow, not a yearly review.</li>
+          <li><b>Supply-chain risk</b>: screen counterparties against the negative registry (distressed-buyer flags already prototyped).</li>
+          <li><b>Adverse-media overlay</b>: news-scanner adapter on the compliance sub-score.</li>
+          <li><b>Track 04 synergy</b>: same engine, default-prediction label: a 12-month early-warning score for the existing MSME book.</li>
+        </ul>
+      </div></div>
+    </div>
+  </div>
+  <div class="foot"><span><b>SHROFF</b> · IDBI Innovate 2026 · Track 03</span><span>12</span></div>
+</section>
+
+<!-- ═══════════ SLIDE 13 · LINKS ═══════════ -->
+<section class="slide">
+  <div class="band-top"></div>
+  <div class="head"><h2>Links</h2><span class="tag">Everything is live &amp; public</span></div>
+  <div class="body" style="justify-content:center">
+    <div class="cols" style="flex:none">
+      <div class="col"><div class="panel"><h3>GitHub public repository</h3>
+        <p class="mono" style="font-size:.2in">github.com/AnshumanAtrey/shroff</p>
+        <p style="color:var(--muted);margin-top:.06in">MIT-licensed · cold-clone runbook in RUN.md · reproducible pipeline (seed 42)</p>
+      </div></div>
+      <div class="col"><div class="panel"><h3>Final product: live deployment</h3>
+        <p class="mono" style="font-size:.2in">shroff.vercel.app</p>
+        <p style="color:var(--muted);margin-top:.06in">Underwriter console · LIVE API chip when connected to the scoring service</p>
+      </div></div>
+    </div>
+    <div class="cols" style="flex:none">
+      <div class="col"><div class="panel"><h3>Scoring API: live</h3>
+        <p class="mono" style="font-size:.2in">shroff.onrender.com/api/health</p>
+        <p style="color:var(--muted);margin-top:.06in">POST /api/score · GET /api/screen · /api/graph/{pan} · /api/ocen/offer/{id}</p>
+      </div></div>
+      <div class="col"><div class="panel"><h3>Demo video (3 minutes)</h3>
+        <p class="mono" style="font-size:.17in">loom.com/share/e0a3c715e5bf499a968a030774963232</p>
+        <p style="color:var(--muted);margin-top:.06in">The 3-persona walkthrough: Ramesh (approve) · Suresh (decline) · Nexon (phoenix refer)</p>
+      </div></div>
+    </div>
+    <div class="panel" style="flex:none;background:var(--wash2)"><h3>Try it in 30 seconds</h3>
+      <p class="mono">curl -X POST https://shroff.onrender.com/api/score -H 'Content-Type: application/json' -d '{"msme_id":"PHOENIX003"}'</p>
+      <p style="color:var(--muted);margin-top:.04in">→ score 678 · band C · REFER, with the struck-off shell named in the rationale.</p>
+    </div>
+  </div>
+  <div class="foot"><span><b>SHROFF</b> · IDBI Innovate 2026 · Track 03</span><span>13</span></div>
+</section>
+
+<!-- ═══════════ SLIDE 14 · CLOSE ═══════════ -->
+<section class="slide" style="background:linear-gradient(135deg,var(--teal-ink) 0%,var(--teal-dark) 60%,var(--teal) 100%);color:#fff;justify-content:center;align-items:center;text-align:center">
+  <div style="position:absolute;top:0;left:0;right:0;height:.14in;background:var(--orange)"></div>
+  <div style="max-width:10in">
+    <p style="font-family:Georgia,serif;font-size:.5in;line-height:1.25;font-style:italic">"The shroff never asked a merchant for paperwork.<br>He watched how the money moved."</p>
+    <p style="font-size:.22in;margin-top:.35in;color:#bfe0d8">SHROFF: approve the invisible-but-healthy · catch the looks-fine-but-failing · refer the phoenix.</p>
+    <p style="font-size:.18in;margin-top:.5in;color:#8fd0c2">Thank you · Anshuman Atrey · IDBI Innovate 2026 · Track 03</p>
+  </div>
+</section>
+
+</body>
+</html>

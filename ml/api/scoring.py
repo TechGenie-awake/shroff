@@ -41,7 +41,31 @@ class Engine:
         bym = self.counterparties.groupby(["msme_id", "month"], sort=False).agg(
             top1=("share", "max"), cnt=("counterparty_gstin", "nunique"))
         self.cp_agg = bym.groupby(level="msme_id").mean()
+        self.score_pop_ref = self._build_score_population_ref()
         self.loaded = True
+
+    def _build_score_population_ref(self) -> np.ndarray:
+        """Sorted array of the FULL population's combined calibrated 12-mo PD
+        (personas excluded, same population train.py evaluates against) —
+        computed once at startup via the already-trained bundle, not a
+        retrain. Powers "this score ranks better than X% of the population"
+        on the Model & Score tab. Lower PD = healthier, so the array is
+        sorted ascending and a percentile is 1 - (rank of this PD / N)."""
+        try:
+            feats = pd.read_parquet(os.path.join(DATA, "features.parquet"))
+        except FileNotFoundError:
+            return np.array([])
+        pop = self.profiles[self.profiles["is_persona"] == 0]
+        X = feats.loc[feats.index.intersection(pop.index), FEATURE_NAMES]
+        if len(X) == 0:
+            return np.array([])
+        b = self.bundle
+        sub_arr = np.column_stack([
+            b["sub_models"][g].predict_proba(X[b["group_features"][g]])[:, 1] for g in GROUPS
+        ])
+        raw_meta = b["meta"].predict_proba(_logit(sub_arr))[:, 1]
+        pd_cal = b["calibrator"].predict(raw_meta)
+        return np.sort(pd_cal)
 
     # ---------------- data access ----------------
     def has(self, msme_id: str) -> bool:
@@ -116,8 +140,19 @@ class Engine:
             ref = b["pop_ref"][g]
             pct_below = np.searchsorted(ref, sub_probs[g], side="left") / len(ref)
             sub_scores[g] = int(round(100 * (1 - pct_below)))  # higher = healthier
+        score_percentile = None
+        if len(self.score_pop_ref):
+            # healthier (lower PD) than this borrower, same "higher = healthier"
+            # convention as sub_scores above: rank = count of population with
+            # PD <= this one (as-good-or-better); the complement is how much
+            # of the population this borrower outranks.
+            rank_as_good_or_better = np.searchsorted(self.score_pop_ref, pd_cal, side="right")
+            n = len(self.score_pop_ref)
+            score_percentile = round(100 * (n - rank_as_good_or_better) / n, 1)
         return {"sub_probs": sub_probs, "raw_meta": raw_meta, "pd_12m": pd_cal,
-                "score": score, "band": band, "sub_scores": sub_scores}
+                "score": score, "band": band, "sub_scores": sub_scores,
+                "score_percentile": score_percentile,
+                "population_n": int(len(self.score_pop_ref))}
 
     def model_info(self) -> dict:
         return {"version": self.bundle["version"],

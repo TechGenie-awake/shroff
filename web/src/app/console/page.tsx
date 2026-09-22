@@ -75,23 +75,22 @@ export default function ConsolePage() {
   };
 
   return (
-    <div className="mx-auto min-h-screen max-w-6xl px-6 pb-16">
-      {/* header */}
-      <header className="reveal flex items-center justify-between pt-8">
+    <div className="mx-auto min-h-screen max-w-7xl px-6 pb-16">
+      <div className="reveal flex items-center justify-between pt-6">
         <div>
-          <Link href="/" className="font-display text-lg font-semibold tracking-tight text-ink">
-            SHROFF
-          </Link>
-          <span className="ml-3 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-3">
-            Underwriter&rsquo;s console
-          </span>
+          <h1 className="font-display text-2xl font-medium tracking-tight text-ink">
+            Portfolio
+          </h1>
+          <p className="mt-0.5 text-[12px] text-ink-3">
+            Every assessed borrower, ranked, banded, and ready for review.
+          </p>
         </div>
         <DataSourceChip source={source} />
-      </header>
+      </div>
 
       {/* stat tiles */}
       <div
-        className="reveal mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-rule bg-rule md:grid-cols-4"
+        className="reveal mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-rule bg-rule md:grid-cols-4"
         style={{ animationDelay: "80ms" }}
       >
         {TILE_ORDER.map((label) => (
@@ -212,7 +211,11 @@ export default function ConsolePage() {
         Scores are computed by a monotonic LightGBM ensemble with TreeSHAP
         reason codes, calibrated to a 12-month PD. Registry and phoenix overlays
         are deterministic and can only worsen a verdict — never improve it.
-        Demo personas run on synthetic consented data.
+        Demo personas run on synthetic consented data. Want to score a
+        business of your own?{" "}
+        <Link href="/console/demo" className="text-teal underline-offset-4 hover:underline">
+          Try the live demo →
+        </Link>
       </p>
     </div>
   );

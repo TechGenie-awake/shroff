@@ -17,6 +17,13 @@ class WhatIfRequest(BaseModel):
     loan_type: str = "working_capital"
 
 
+class LiveScoreRequest(BaseModel):
+    """Score an arbitrary GSTIN/PAN the user types in — not one of the fixed
+    personas. See ml/api/live_intake.py: response is clearly marked `simulated`."""
+    identifier: str
+    requested_amount_inr: Optional[int] = None
+
+
 class Reason(BaseModel):
     code: str
     group: str
@@ -98,6 +105,11 @@ class ScoreResponse(BaseModel):
     band: str
     pd_12m: float
     sub_scores: dict[str, int]
+    # this borrower's combined score vs the reference population, e.g. 87.3
+    # means "healthier (lower PD) than 87.3% of the population" — computed
+    # once at startup from the trained bundle, not hardcoded (ml/api/scoring.py)
+    score_percentile: Optional[float] = None
+    population_n: Optional[int] = None
     decision: Decision
     reasons: list[Reason]
     overlays: Overlays
@@ -106,6 +118,9 @@ class ScoreResponse(BaseModel):
     narrative: Optional[str] = None
     # operational-impact overlay — onboarding/field-verification cost saved (see api/impact.py)
     bank_impact: Optional[BankImpact] = None
+    # set only for /api/score/live — honesty marker per CONTRACTS.md's is_sample pattern
+    simulated: Optional[bool] = None
+    simulation_note: Optional[str] = None
 
 
 class PersonaOut(BaseModel):

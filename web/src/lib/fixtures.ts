@@ -9,6 +9,7 @@ import type {
   GraphResponse,
   HealthResponse,
   LoanTypeInfo,
+  ModelInfoResponse,
   MonthlyRow,
   MsmeResponse,
   OcenOffer,
@@ -953,4 +954,49 @@ export const railsFixture: RailsResponse = {
   ],
   "summary": "AA input live-capable · OCEN output spec-conformant · ULI adapter-ready on RBIH onboarding",
   "principle": "One DataSourceAdapter interface — IDBI's sandbox becomes one more adapter, wired in hours."
+};
+
+// Snapshot of GET /api/model/info — real values as of the last local training
+// run (ml/artifacts/metrics.json); used only when the live API is unreachable.
+export const modelInfoFixture: ModelInfoResponse = {
+  architecture: {
+    sub_models: ["cash_flow", "growth", "stability", "compliance"],
+    algorithm: "Monotonic-constrained LightGBM (gradient-boosted trees), one per sub-model group",
+    combiner: "Logistic regression on logit(sub-model PDs), fit on 5-fold out-of-fold sub-model predictions (no leakage)",
+    calibration: "Isotonic regression on the holdout split -> 12-month PD",
+    baseline: "Standardized LogisticRegression over all features, reported side-by-side as the 'regulator view'",
+    explainability: "TreeSHAP on the deciding sub-models directly (not a surrogate), weighted by the combiner's coefficients",
+  },
+  scorecard_formula: {
+    description: "score = SCORE_REF + PDO * log2(odds / ODDS_REF), where odds = (1 - PD) / PD",
+    score_ref: 660, pd_ref: 0.05, points_per_doubling: 72, odds_ref: 19,
+    score_min: 300, score_max: 900,
+    bands: [
+      { band: "A", floor_score: 750, band_factor: 0.65, tenure_months: 36 },
+      { band: "B", floor_score: 680, band_factor: 0.5, tenure_months: 24 },
+      { band: "C", floor_score: 600, band_factor: 0.3, tenure_months: 12 },
+      { band: "D", floor_score: 500, band_factor: 0.15, tenure_months: 12 },
+      { band: "E", floor_score: null, band_factor: 0, tenure_months: 0 },
+    ],
+  },
+  metrics: {
+    sub_models: {
+      cash_flow: { auc: 0.8137, ks: 0.5169 },
+      growth: { auc: 0.7864, ks: 0.4354 },
+      stability: { auc: 0.7878, ks: 0.466 },
+      compliance: { auc: 0.8155, ks: 0.515 },
+    },
+    combined: { auc: 0.856, ks: 0.5751, brier_calibrated: 0.0648 },
+    baseline_logreg: { auc: 0.8671, ks: 0.5935 },
+    train_n: 6400, holdout_n: 1600, prevalence: 0.1024,
+    meta_coefficients: { cash_flow: 0.3886, growth: 0.1493, stability: 0.2623, compliance: 0.2271 },
+    model_version: "v1", trained_on: "synthetic-v1", seed: 42,
+  },
+  monotone_constraints: {
+    cash_flow: { n_features: 14, n_risk_increasing: 8, n_risk_decreasing: 6, n_unconstrained: 0 },
+    growth: { n_features: 9, n_risk_increasing: 0, n_risk_decreasing: 8, n_unconstrained: 1 },
+    stability: { n_features: 12, n_risk_increasing: 5, n_risk_decreasing: 3, n_unconstrained: 4 },
+    compliance: { n_features: 10, n_risk_increasing: 6, n_risk_decreasing: 2, n_unconstrained: 2 },
+  },
+  total_features: 45,
 };

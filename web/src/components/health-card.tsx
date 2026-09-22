@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import {
   getGraph,
   getLoanTypes,
+  getModelInfo,
   getMsme,
   getOcenOffer,
   panForMsme,
@@ -16,6 +17,7 @@ import type {
   GraphResponse,
   LoanTypeId,
   LoanTypeInfo,
+  ModelInfoResponse,
   MsmeResponse,
   OcenOffer,
   ScoreResponse,
@@ -23,6 +25,7 @@ import type {
 import { inr } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BankImpactPanel } from "@/components/bank-impact";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ConcentrationBar } from "@/components/concentration-bar";
 import { LendingRail } from "@/components/lending-rail";
 import { ConsentPopover } from "@/components/consent-popover";
@@ -31,6 +34,7 @@ import { DivergenceChart } from "@/components/divergence-chart";
 import { EntityGraph } from "@/components/entity-graph";
 import { EwsStrip } from "@/components/ews-strip";
 import { LoanTypeSelector } from "@/components/loan-type-selector";
+import { ModelDetail } from "@/components/model-detail";
 import { ReasonsList } from "@/components/reasons-list";
 import { ScoreGauge } from "@/components/score-gauge";
 import { ScreeningPanel } from "@/components/screening-panel";
@@ -54,6 +58,14 @@ function PanelTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
+const TAB_ORDER = [
+  { value: "overview", label: "Overview" },
+  { value: "model", label: "Model & score" },
+  { value: "trends", label: "Cash flow · GST" },
+  { value: "screening", label: "Screening & graph" },
+  { value: "lending", label: "Supply chain · rail" },
+] as const;
+
 export function HealthCard({ id }: { id: string }) {
   const [msme, setMsme] = useState<MsmeResponse | null>(null);
   const [score, setScore] = useState<ScoreResponse | null>(null);
@@ -61,6 +73,7 @@ export function HealthCard({ id }: { id: string }) {
   const [offer, setOffer] = useState<OcenOffer | null>(null);
   const [loanTypes, setLoanTypes] = useState<LoanTypeInfo[]>([]);
   const [loanType, setLoanType] = useState<LoanTypeId>("working_capital");
+  const [modelInfo, setModelInfo] = useState<ModelInfoResponse | null>(null);
   const [source, setSource] = useState<DataSource | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,15 +82,17 @@ export function HealthCard({ id }: { id: string }) {
     let cancelled = false;
     (async () => {
       try {
-        const [m, o, lt] = await Promise.all([
+        const [m, o, lt, mi] = await Promise.all([
           getMsme(id),
           getOcenOffer(id),
           getLoanTypes(),
+          getModelInfo(),
         ]);
         if (cancelled) return;
         setMsme(m.data);
         setOffer(o.data);
         setLoanTypes(lt.data);
+        setModelInfo(mi.data);
         const g = await getGraph(panForMsme(id, m.data.profile.pan));
         if (!cancelled) setGraph(g.data);
       } catch {
@@ -200,9 +215,9 @@ export function HealthCard({ id }: { id: string }) {
         )}
       </header>
 
-      {/* ── row 1: gauge · radar · decision ── */}
-      <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <Card className="reveal" style={{ animationDelay: "60ms" }}>
+      {/* ── always-visible summary strip ── */}
+      <div className="reveal mt-6 grid gap-4 lg:grid-cols-3" style={{ animationDelay: "60ms" }}>
+        <Card>
           <CardHeader>
             <PanelTitle>Health score</PanelTitle>
           </CardHeader>
@@ -217,7 +232,7 @@ export function HealthCard({ id }: { id: string }) {
           </CardContent>
         </Card>
 
-        <Card className="reveal" style={{ animationDelay: "120ms" }}>
+        <Card>
           <CardHeader>
             <PanelTitle>Sub-scores</PanelTitle>
           </CardHeader>
@@ -226,7 +241,7 @@ export function HealthCard({ id }: { id: string }) {
           </CardContent>
         </Card>
 
-        <Card className="reveal" style={{ animationDelay: "180ms" }}>
+        <Card>
           <CardHeader>
             <PanelTitle>Decision</PanelTitle>
           </CardHeader>
@@ -259,19 +274,83 @@ export function HealthCard({ id }: { id: string }) {
         </Card>
       </div>
 
-      {/* ── row 2: reasons · overlays ── */}
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        <Card className="reveal lg:col-span-2" style={{ animationDelay: "240ms" }}>
-          <CardHeader>
-            <PanelTitle>Signed reason codes · TreeSHAP</PanelTitle>
-          </CardHeader>
-          <CardContent>
-            <ReasonsList reasons={score.reasons} />
-          </CardContent>
-        </Card>
+      {/* ── tabbed detail ── */}
+      <Tabs defaultValue="overview" className="reveal mt-6" style={{ animationDelay: "120ms" }}>
+        <TabsList
+          variant="line"
+          className="w-full justify-start gap-1 border-b border-rule pb-0"
+        >
+          {TAB_ORDER.map((t) => (
+            <TabsTrigger
+              key={t.value}
+              value={t.value}
+              className="rounded-none border-0 px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-2 data-active:text-teal"
+            >
+              {t.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-        <div className="flex flex-col gap-4">
-          <Card className="reveal" style={{ animationDelay: "300ms" }}>
+        <TabsContent value="overview" className="mt-4">
+          <Card>
+            <CardHeader>
+              <PanelTitle>Signed reason codes · TreeSHAP</PanelTitle>
+            </CardHeader>
+            <CardContent>
+              <ReasonsList reasons={score.reasons} />
+            </CardContent>
+          </Card>
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <PanelTitle>Early-warning signals</PanelTitle>
+              </CardHeader>
+              <CardContent>
+                <EwsStrip
+                  level={score.overlays.early_warning.level}
+                  triggers={score.overlays.early_warning.triggers}
+                />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <PanelTitle>Registry screening</PanelTitle>
+              </CardHeader>
+              <CardContent>
+                <ScreeningPanel
+                  checked={score.overlays.screening.checked}
+                  hits={score.overlays.screening.hits}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="model" className="mt-4">
+          <Card>
+            <CardHeader>
+              <PanelTitle>
+                Model, output, parameters &amp; where this score ranks
+              </PanelTitle>
+            </CardHeader>
+            <CardContent>
+              <ModelDetail score={score} modelInfo={modelInfo} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="trends" className="mt-4">
+          <Card>
+            <CardHeader>
+              <PanelTitle>
+                Bank-verified inflows vs GST-declared turnover · monthly
+              </PanelTitle>
+            </CardHeader>
+            <CardContent>
+              <DivergenceChart monthly={monthly} />
+            </CardContent>
+          </Card>
+          <Card className="mt-4">
             <CardHeader>
               <PanelTitle>Early-warning signals</PanelTitle>
             </CardHeader>
@@ -282,82 +361,72 @@ export function HealthCard({ id }: { id: string }) {
               />
             </CardContent>
           </Card>
-          <Card className="reveal grow" style={{ animationDelay: "360ms" }}>
-            <CardHeader>
-              <PanelTitle>Registry screening</PanelTitle>
-            </CardHeader>
-            <CardContent>
-              <ScreeningPanel
-                checked={score.overlays.screening.checked}
-                hits={score.overlays.screening.hits}
-              />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+        </TabsContent>
 
-      {/* ── row 3: the divergence view ── */}
-      <Card className="reveal mt-4" style={{ animationDelay: "420ms" }}>
-        <CardHeader>
-          <PanelTitle>
-            Bank-verified inflows vs GST-declared turnover · monthly
-          </PanelTitle>
-        </CardHeader>
-        <CardContent>
-          <DivergenceChart monthly={monthly} />
-        </CardContent>
-      </Card>
+        <TabsContent value="screening" className="mt-4">
+          <div className="grid gap-4 lg:grid-cols-3">
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <PanelTitle>Entity graph · registry walk</PanelTitle>
+              </CardHeader>
+              <CardContent>
+                {graph ? (
+                  <EntityGraph graph={graph} />
+                ) : (
+                  <div className="h-[380px] animate-pulse rounded-md border border-rule bg-paper" />
+                )}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <PanelTitle>Registry screening</PanelTitle>
+              </CardHeader>
+              <CardContent>
+                <ScreeningPanel
+                  checked={score.overlays.screening.checked}
+                  hits={score.overlays.screening.hits}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
-      {/* ── row 4: entity graph · concentration ── */}
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        <Card className="reveal lg:col-span-2" style={{ animationDelay: "480ms" }}>
-          <CardHeader>
-            <PanelTitle>Entity graph · registry walk</PanelTitle>
-          </CardHeader>
-          <CardContent>
-            {graph ? (
-              <EntityGraph graph={graph} />
-            ) : (
-              <div className="h-[380px] animate-pulse rounded-md border border-rule bg-paper" />
+        <TabsContent value="lending" className="mt-4">
+          <div className="grid gap-4 lg:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <PanelTitle>Supply-chain concentration</PanelTitle>
+              </CardHeader>
+              <CardContent>
+                <ConcentrationBar
+                  top3Share={score.overlays.supply_chain.top3_buyer_share}
+                  distressed={score.overlays.supply_chain.distressed_counterparties}
+                />
+              </CardContent>
+            </Card>
+            {offer && (
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <PanelTitle>Lending rail · OCEN 4.0 output</PanelTitle>
+                </CardHeader>
+                <CardContent>
+                  <LendingRail offer={offer} />
+                </CardContent>
+              </Card>
             )}
-          </CardContent>
-        </Card>
-        <Card className="reveal" style={{ animationDelay: "540ms" }}>
-          <CardHeader>
-            <PanelTitle>Supply-chain concentration</PanelTitle>
-          </CardHeader>
-          <CardContent>
-            <ConcentrationBar
-              top3Share={score.overlays.supply_chain.top3_buyer_share}
-              distressed={score.overlays.supply_chain.distressed_counterparties}
-            />
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* ── row 5: lending rail (OCEN output) · bank impact ── */}
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        {offer && (
-          <Card className="reveal lg:col-span-2" style={{ animationDelay: "600ms" }}>
-            <CardHeader>
-              <PanelTitle>Lending rail · OCEN 4.0 output</PanelTitle>
-            </CardHeader>
-            <CardContent>
-              <LendingRail offer={offer} />
-            </CardContent>
-          </Card>
-        )}
-        {score.bank_impact && (
-          <Card className="reveal" style={{ animationDelay: "660ms" }}>
-            <CardHeader>
-              <PanelTitle>Bank impact · cost saved</PanelTitle>
-            </CardHeader>
-            <CardContent>
-              <BankImpactPanel impact={score.bank_impact} />
-            </CardContent>
-          </Card>
-        )}
-      </div>
+            {score.bank_impact && (
+              <Card>
+                <CardHeader>
+                  <PanelTitle>Bank impact · cost saved</PanelTitle>
+                </CardHeader>
+                <CardContent>
+                  <BankImpactPanel impact={score.bank_impact} />
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

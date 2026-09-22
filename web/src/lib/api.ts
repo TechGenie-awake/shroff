@@ -9,6 +9,7 @@ import type {
   HealthResponse,
   LoanTypeId,
   LoanTypeInfo,
+  ModelInfoResponse,
   MsmeResponse,
   OcenOffer,
   Persona,
@@ -22,6 +23,7 @@ import {
   graphPanByMsme,
   healthFixture,
   loanTypesFixture,
+  modelInfoFixture,
   msmeFixtures,
   ocenFixtures,
   personasFixture,
@@ -40,7 +42,7 @@ export interface Sourced<T> {
   source: DataSource;
 }
 
-const TIMEOUT_MS = 2500;
+const TIMEOUT_MS = 15000;
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const ctrl = new AbortController();
@@ -217,6 +219,72 @@ export function getRails(): Promise<Sourced<RailsResponse>> {
     () => request<RailsResponse>("/api/rails"),
     () => railsFixture
   );
+}
+
+/** GET /api/model/info — architecture, scorecard formula, live validation metrics */
+export function getModelInfo(): Promise<Sourced<ModelInfoResponse>> {
+  return withFallback(
+    () => request<ModelInfoResponse>("/api/model/info"),
+    () => modelInfoFixture
+  );
+}
+
+/**
+ * POST /api/score/live — score ANY GSTIN/PAN the user types in, not one of
+ * the 3 fixed personas. No fixture fallback: this endpoint has no meaningful
+ * offline stand-in for arbitrary input, so a down API surfaces as a real error.
+ */
+export async function postScoreLive(
+  identifier: string,
+  requestedAmountInr?: number
+): Promise<ScoreResponse> {
+  return request<ScoreResponse>("/api/score/live", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      identifier,
+      ...(requestedAmountInr ? { requested_amount_inr: requestedAmountInr } : {}),
+    }),
+  });
+}
+
+/**
+ * GET /api/documents/sample — the URL for the downloadable sample-documents
+ * ZIP (business_profile.csv + monthly_history.csv) for a given GSTIN/PAN.
+ * A plain URL, not a fetch: the browser's native download handling (from the
+ * server's Content-Disposition header) is simpler and more reliable than
+ * fetch+blob for a file download.
+ */
+export function sampleDocumentsUrl(
+  identifier: string,
+  requestedAmountInr?: number
+): string {
+  const qs = new URLSearchParams({ identifier: identifier.trim().toUpperCase() });
+  if (requestedAmountInr) qs.set("requested_amount_inr", String(requestedAmountInr));
+  return `${API_BASE}/api/documents/sample?${qs.toString()}`;
+}
+
+/**
+ * POST /api/documents/upload — parse the two uploaded CSVs and score EXACTLY
+ * what's in them (no re-simulation). Throws with the server's 422 detail
+ * message on a malformed file, since that's meant to be shown to the user.
+ */
+export async function postDocumentsUpload(
+  businessProfile: File,
+  monthlyHistory: File
+): Promise<ScoreResponse> {
+  const form = new FormData();
+  form.append("business_profile", businessProfile);
+  form.append("monthly_history", monthlyHistory);
+  const res = await fetch(`${API_BASE}/api/documents/upload`, {
+    method: "POST",
+    body: form,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new Error(body?.detail ?? `Upload failed (HTTP ${res.status})`);
+  }
+  return (await res.json()) as ScoreResponse;
 }
 
 /** Resolve the graph-walk PAN for an msme id (profile PAN when live). */
