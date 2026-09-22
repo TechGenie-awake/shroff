@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import {
   getGraph,
+  getLoanTypes,
   getMsme,
   getOcenOffer,
   panForMsme,
@@ -13,12 +14,15 @@ import {
 } from "@/lib/api";
 import type {
   GraphResponse,
+  LoanTypeId,
+  LoanTypeInfo,
   MsmeResponse,
   OcenOffer,
   ScoreResponse,
 } from "@/lib/types";
 import { inr } from "@/lib/format";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BankImpactPanel } from "@/components/bank-impact";
 import { ConcentrationBar } from "@/components/concentration-bar";
 import { LendingRail } from "@/components/lending-rail";
 import { ConsentPopover } from "@/components/consent-popover";
@@ -26,6 +30,7 @@ import { DataSourceChip } from "@/components/data-source";
 import { DivergenceChart } from "@/components/divergence-chart";
 import { EntityGraph } from "@/components/entity-graph";
 import { EwsStrip } from "@/components/ews-strip";
+import { LoanTypeSelector } from "@/components/loan-type-selector";
 import { ReasonsList } from "@/components/reasons-list";
 import { ScoreGauge } from "@/components/score-gauge";
 import { ScreeningPanel } from "@/components/screening-panel";
@@ -54,23 +59,25 @@ export function HealthCard({ id }: { id: string }) {
   const [score, setScore] = useState<ScoreResponse | null>(null);
   const [graph, setGraph] = useState<GraphResponse | null>(null);
   const [offer, setOffer] = useState<OcenOffer | null>(null);
+  const [loanTypes, setLoanTypes] = useState<LoanTypeInfo[]>([]);
+  const [loanType, setLoanType] = useState<LoanTypeId>("working_capital");
   const [source, setSource] = useState<DataSource | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Fixed borrower data — fetched once per id, independent of loan type.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [m, s, o] = await Promise.all([
+        const [m, o, lt] = await Promise.all([
           getMsme(id),
-          postScore(id),
           getOcenOffer(id),
+          getLoanTypes(),
         ]);
         if (cancelled) return;
         setMsme(m.data);
-        setScore(s.data);
         setOffer(o.data);
-        setSource(s.source);
+        setLoanTypes(lt.data);
         const g = await getGraph(panForMsme(id, m.data.profile.pan));
         if (!cancelled) setGraph(g.data);
       } catch {
@@ -81,6 +88,27 @@ export function HealthCard({ id }: { id: string }) {
       cancelled = true;
     };
   }, [id]);
+
+  // The decision itself — re-run against the real sizing formula whenever the
+  // loan type changes, so switching the selector calls the live API, not a
+  // client-side relabel of the same number.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const s = await postScore(id, loanType);
+        if (!cancelled) {
+          setScore(s.data);
+          setSource(s.source);
+        }
+      } catch {
+        if (!cancelled) setError(`No borrower found for id "${id}".`);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, loanType]);
 
   if (error) {
     return (
@@ -158,6 +186,18 @@ export function HealthCard({ id }: { id: string }) {
             <div className="mt-0.5 text-[11px] text-ink-3">{profile.sector}</div>
           </div>
         </div>
+        {loanTypes.length > 0 && (
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-3">
+              Loan type
+            </span>
+            <LoanTypeSelector
+              loanTypes={loanTypes}
+              value={loanType}
+              onChange={setLoanType}
+            />
+          </div>
+        )}
       </header>
 
       {/* ── row 1: gauge · radar · decision ── */}
@@ -295,17 +335,29 @@ export function HealthCard({ id }: { id: string }) {
         </Card>
       </div>
 
-      {/* ── row 5: lending rail (OCEN output) ── */}
-      {offer && (
-        <Card className="reveal mt-4" style={{ animationDelay: "600ms" }}>
-          <CardHeader>
-            <PanelTitle>Lending rail · OCEN 4.0 output</PanelTitle>
-          </CardHeader>
-          <CardContent>
-            <LendingRail offer={offer} />
-          </CardContent>
-        </Card>
-      )}
+      {/* ── row 5: lending rail (OCEN output) · bank impact ── */}
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        {offer && (
+          <Card className="reveal lg:col-span-2" style={{ animationDelay: "600ms" }}>
+            <CardHeader>
+              <PanelTitle>Lending rail · OCEN 4.0 output</PanelTitle>
+            </CardHeader>
+            <CardContent>
+              <LendingRail offer={offer} />
+            </CardContent>
+          </Card>
+        )}
+        {score.bank_impact && (
+          <Card className="reveal" style={{ animationDelay: "660ms" }}>
+            <CardHeader>
+              <PanelTitle>Bank impact · cost saved</PanelTitle>
+            </CardHeader>
+            <CardContent>
+              <BankImpactPanel impact={score.bank_impact} />
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }

@@ -24,6 +24,64 @@ from train.scorecard import BAND_FACTOR, BAND_TENURE, worse_band
 VERDICT_BY_BAND = {"A": "APPROVE", "B": "APPROVE", "C": "REFER", "D": "REFER", "E": "DECLINE"}
 _VERDICT_RANK = {"APPROVE": 0, "REFER": 1, "DECLINE": 2}
 
+# ---------------------------------------------------------------------------------------
+# Loan types — TWO real, distinct sizing formulas. Working capital was the original,
+# single-formula design; term loan is a genuinely different underwriting rule (DSCR),
+# not a relabeled copy. Invoice discounting / trade finance are NOT implemented — the
+# API rejects them explicitly (schemas.py) rather than silently falling back to one of
+# these two, which would misrepresent an unbuilt product as a working one.
+LOAN_TYPES = ("working_capital", "term_loan")
+
+# Full catalogue for /api/loan-types — including the honestly-not-yet-built ones, so
+# the UI can show every real MSME credit product a bank offers without pretending the
+# unbuilt ones work. This is the same is_sample/adapter-status honesty pattern as
+# screening and rails.py, applied to loan products instead of data sources.
+LOAN_TYPE_CATALOGUE = [
+    {"id": "working_capital", "label": "Working Capital / Cash Credit", "implemented": True,
+     "sizing_rule": "20% of annualized bank-verified turnover (Nayak Committee norm) × band factor"},
+    {"id": "term_loan", "label": "Term Loan (equipment / expansion)", "implemented": True,
+     "sizing_rule": "DSCR-based: free cash flow ÷ band DSCR requirement → max EMI → "
+                    "present-valued over a longer tenure at a band test rate"},
+    {"id": "invoice_discounting", "label": "Invoice / Bill Discounting (TReDS-style)",
+     "implemented": False,
+     "sizing_rule": "Not yet built — would size against a specific invoice's value and "
+                    "the buyer's own creditworthiness, not the borrower's turnover"},
+    {"id": "trade_finance", "label": "Trade Finance (import/export)", "implemented": False,
+     "sizing_rule": "Not yet built — would size against LC/shipment value and trade-cycle length"},
+]
+
+# Debt-Service Coverage Ratio required by band — a standard term-loan underwriting
+# ratio (annual cash available for debt service must exceed the loan's annual
+# obligation by this multiple). Like BAND_FACTOR, the specific numbers are our own
+# calibration, not an external published table — say so if asked (same pattern as the
+# Nayak-norm band_factor ladder).
+TERM_LOAN_DSCR = {"A": 1.25, "B": 1.35, "C": 1.55, "D": 1.85, "E": None}
+TERM_LOAN_TENURE = {"A": 84, "B": 60, "C": 36, "D": 24, "E": 0}   # months — longer than WC
+TERM_LOAN_RATE_PCT = {"A": 12.5, "B": 14.0, "C": 16.5, "D": 19.0, "E": None}  # test rate for PV
+
+
+def _term_loan_eligible(monthly_free_cash_flow: float, band_eff: str) -> tuple[int, int, float]:
+    """DSCR-based term-loan sizing (distinct from the working-capital turnover rule).
+
+    Annual cash available for debt service = 12 x mean monthly (inflow - outflow -
+    existing EMI). Max annual debt service = that / DSCR_required. Max EMI = /12.
+    Eligible principal = present value of that EMI annuity at the band's test rate
+    over the band's tenure (reducing-balance loan-amount formula — the algebraic
+    inverse of the EMI formula in api/rails.py).
+    """
+    dscr = TERM_LOAN_DSCR[band_eff]
+    tenure = TERM_LOAN_TENURE[band_eff]
+    rate = TERM_LOAN_RATE_PCT[band_eff]
+    if dscr is None or tenure == 0 or monthly_free_cash_flow <= 0:
+        return 0, 0, 0.0
+    annual_cash = 12.0 * monthly_free_cash_flow
+    max_annual_debt_service = annual_cash / dscr
+    max_emi = max_annual_debt_service / 12.0
+    r = rate / 12.0 / 100.0
+    factor = (1 + r) ** tenure
+    principal = max_emi * (factor - 1) / (r * factor) if r > 0 else max_emi * tenure
+    return int(round(principal / 50000.0) * 50000), tenure, max_emi
+
 
 def _worsen(v1: str, v2: str) -> str:
     return v1 if _VERDICT_RANK[v1] >= _VERDICT_RANK[v2] else v2
@@ -142,8 +200,14 @@ def _hit_is_high_confidence(hit: dict) -> bool:
 # The decision
 # ---------------------------------------------------------------------------------------
 def decide(profile: dict, g: pd.DataFrame, score: int, band: str,
-           screening: dict, ews: dict) -> tuple[dict, str]:
-    """Returns (decision dict, effective band after overlays)."""
+           screening: dict, ews: dict, loan_type: str = "working_capital") -> tuple[dict, str]:
+    """Returns (decision dict, effective band after overlays).
+
+    loan_type branches ONLY the sizing formula (amount/tenure/rationale) — the
+    verdict/band/overlay logic below is identical for every loan type, because a
+    fraud flag or a collapsing cash-flow trend doesn't become less true depending on
+    what the money is for.
+    """
     requested = int(profile.get("requested_amount_inr") or 0)
     annualized = 12.0 * float(g["bank_inflow_inr"].mean())
 
@@ -182,6 +246,33 @@ def decide(profile: dict, g: pd.DataFrame, score: int, band: str,
     if ews["level"] == "red":
         overlay_notes.append("early-warning red" + (" (band capped at C)" if band_capped else ""))
 
+    if loan_type == "term_loan":
+        free_cash_flow = float((g["bank_inflow_inr"] - g["bank_outflow_inr"]
+                                 - g["emi_debit_inr"]).mean())
+        eligible, tenure, max_emi = _term_loan_eligible(free_cash_flow, band_eff)
+        amount = min(requested, eligible) if requested else eligible
+        amount = int(round(amount / 50000.0) * 50000)
+        if verdict == "DECLINE":
+            amount, tenure = 0, 0
+        if verdict == "DECLINE":
+            rationale = (f"Band {band_eff} yields no term-loan eligibility under the DSCR "
+                         f"underwriting rule"
+                         + (": " + "; ".join(overlay_notes) if overlay_notes else "")
+                         + ".")
+        else:
+            dscr = TERM_LOAN_DSCR[band_eff]
+            rationale = (f"DSCR rule: ₹{free_cash_flow * 12 / 1e5:.1f}L/yr free cash flow "
+                         f"(after existing EMIs) ÷ {dscr:.2f}x band-{band_eff} DSCR requirement "
+                         f"→ max EMI ₹{max_emi / 1000:.1f}k/mo, financeable to ₹{eligible / 1e5:.1f}L "
+                         f"over {tenure} months at a {TERM_LOAN_RATE_PCT[band_eff]:.1f}% test rate; "
+                         f"sanction = min(requested ₹{requested / 1e5:.1f}L, eligible) = "
+                         f"₹{amount / 1e5:.1f}L"
+                         + ("; " + "; ".join(overlay_notes) if overlay_notes else "")
+                         + ".")
+        return ({"verdict": verdict, "amount_inr": amount, "tenure_months": tenure,
+                 "loan_type": loan_type, "rationale": rationale}, band_eff)
+
+    # -- working_capital (default) --
     eligible = 0.20 * annualized * BAND_FACTOR[band_eff]
     amount = min(requested, eligible) if requested else eligible
     amount = int(round(amount / 50000.0) * 50000)
@@ -203,4 +294,4 @@ def decide(profile: dict, g: pd.DataFrame, score: int, band: str,
                      + ".")
 
     return ({"verdict": verdict, "amount_inr": amount, "tenure_months": tenure,
-             "rationale": rationale}, band_eff)
+             "loan_type": loan_type, "rationale": rationale}, band_eff)

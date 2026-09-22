@@ -13,6 +13,36 @@ so the demo needs no network. Every row is re-validated (structure) and RESERVED
 
 Rebuild any time with `python3 seed_db.py`. Per-run outcomes: `seeds/seed_report.json`.
 
+## Live refresh — genuinely on-demand, not scheduled (added 2026-08-26)
+
+`python3 screening/refresh_live.py` re-fetches over the real network, right now, and
+writes to `seeds/live/` (never overwrites `seeds/real/` automatically — review the diff
+first). Verified working for the two sources with no bot-protection, together the
+majority of the real row count:
+
+| Source | Verified live | vs. last captured |
+|---|---:|---:|
+| RBI Alert List | 95 rows | 95 (unchanged) |
+| OpenSanctions `in_nse_debarred` | 14,406 rows | ~14,829 (Jul capture) |
+| OpenSanctions `in_mha_banned` (UAPA) | 146 rows | 144 |
+| OpenSanctions `in_sansad` (PEP) | 8,445 rows | 5,649 — **not directly comparable**: the live script doesn't yet replicate the original's dedup-on-(name,list_type) step, so this count is closer to raw-row than the deduped figure below |
+
+**Still one-time/not-yet-automated, honestly**, not silently skipped:
+- **MahaGST NGTP** — the XLSX link embeds the publish date and moves; needs
+  link-discovery + `openpyxl`, neither built yet.
+- **CBDT defaulters** — Akamai blocks plain HTTP clients; original capture needed
+  `curl_cffi` Chrome TLS-fingerprint impersonation, not rebuilt here.
+- **PAN/GSTIN extraction from OpenSanctions `identifiers`** — the live script pulls
+  `name` only; the regex+validation parser that extracted the 11,631 real PANs is not
+  rebuilt in this pass.
+- **data.gov.in MCA** — reachable live, but the free sample key caps at 10 rows/request;
+  fixed by registering a free key (900 → 129,694 rows), not by more code.
+
+This is genuinely "run it and it hits the real internet" — it is NOT "runs by itself on
+a schedule." Turning this into a scheduled, continuous feed needs cloud infra
+(EventBridge Scheduler + Step Functions, one Lambda/Fargate task per source) — see
+`docs/INFRA-AWS.md` §3.3, which this script is the first real piece of.
+
 ## Current registry.db composition
 
 | Registry | Real rows | Sample rows | Real source(s) |

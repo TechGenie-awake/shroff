@@ -1,0 +1,26 @@
+{
+  "fetched_at": "2026-08-25T19:31:52+00:00",
+  "sources": [
+    {
+      "source": "rbi_alert_list",
+      "status": "ok",
+      "rows_live": 95,
+      "rows_previously_captured": 95
+    },
+    {
+      "source": "opensanctions:in_nse_debarred",
+      "status": "ok",
+      "rows_live": 14406
+    },
+    {
+      "source": "opensanctions:in_mha_banned",
+      "status": "ok",
+      "rows_live": 146
+    },
+    {
+      "source": "opensanctions:in_sansad",
+      "status": "ok",
+      "rows_live": 8445
+    }
+  ]
+}

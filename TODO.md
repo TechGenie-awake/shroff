@@ -1,7 +1,9 @@
 # IDBI Innovate 2026 — TODO
 
 **Track 03 · Financial Inclusion · MSME Financial Health Card ("SHROFF")**
-Round-1 (Proof of Concept / Idea Submission) deadline: **Jul 13, 2026, 23:59 IST**
+Round-1 deadline (passed): Jul 13, 2026. **Status: shortlisted, Top 24.** Currently in the
+**Prototype Refinement Phase**, submissions open until **Sep 6, 2026** (extended from Sep 2).
+See `given/round-2/` for shortlist, mentor-session, and sandbox-access material.
 
 ---
 
@@ -50,27 +52,69 @@ Round-1 (Proof of Concept / Idea Submission) deadline: **Jul 13, 2026, 23:59 IST
 
 ---
 
-## ⬜ Next — before Jul 13 submission
+## ✅ Round 1 — submitted, shortlisted (superseded, kept for history)
 
-- [ ] Register the team on Hack2skill (team name + members — solo or with Gayatri?)
-- [ ] Review the IP / participation agreement at registration (Walrus is the product — read before accepting)
-- [ ] `git` commit + push the **public GitHub repo** (git initialized; needs first commit + public push) — shortlisting booster
-- [ ] Deploy **web → Vercel** and **ml → Render** (needs your accounts); add a keep-warm ping for Render free tier — the Vercel URL is the deployment-link booster
-- [ ] Build the **deck** (15-slide official template → PDF) from real screenshots + real metrics (`ml/artifacts/metrics.json`: AUC 0.856 / KS 0.575) — **mandatory deliverable**
-- [ ] Record the **3-min demo video** (3-persona walk per `RUN.md`) → link on slide 13
-- [ ] Submit round 1 on the Hack2skill dashboard before **Jul 13, 23:59 IST**
+- [x] Registered the team on Hack2skill as **Walrus Securitas**
+- [x] `git` commit + push the public GitHub repo
+- [x] Built the **deck** + submitted round 1 on the Hack2skill dashboard before Jul 13
+- [x] Shortlisted Top 24 — see `given/round-2/shortlisted-team.txt`, `shortlisting-mail.txt`
+- [ ] Deploy **web → Vercel** and **ml → Render** (needs your accounts) — still not done; moved to Phase 2 §G below, now competing against the fuller AWS path in `docs/INFRA-AWS.md`
+- [ ] Record the 3-min demo video — still needed for the prototype-phase deliverable
+
+## ⬜ Optional / stretch (from round 1 — mostly folded into Phase 2 below)
+
+- [ ] Second submission on **Track 04 (MSME default prediction)** — shares ~80% of the engine (same GBM+SHAP stack, different label) — business decision, not started
 
 ---
 
-## ⬜ Optional / stretch
+## ⬜ Phase 2 — build backlog (compiled after Aug 26 mentor session)
 
-- [ ] Get a registered (free) **data.gov.in API key** (needs your login) → removes the 10-row clamp, scales MCA company-master from 900 to the 129,694 struck-off rows available
-- [ ] Second submission on **Track 04 (MSME default prediction)** — shares ~80% of the engine (same GBM+SHAP stack, different label)
-- [ ] Wire the adverse-media scanner (news-module) as the compliance-overlay adapter (½-day)
-- [ ] Supply-chain Tier B: cross-check counterparties against the negative registry (distressed-buyer flag)
+Everything still left to build, pulled from `docs/INFRA-AWS.md`, `docs/TECHNICAL-WALKTHROUGH.md`,
+`docs/SANDBOX-FORM-ANSWERS.md`, `given/round-2/track03-competitors-deep-dive.md` §5, and
+`given/round-2/data-field-requirements-submission.md`. Items marked **(quick win)** are small,
+proven, or already benchmarked — do these first.
 
-## ⬜ Later — if shortlisted (prototype phase, Aug 2–16)
+### A. Real data — negative-registry scraping gaps
+- [ ] MahaGST live refresh — XLSX link embeds a changing "as-on" date; needs link-discovery + `openpyxl`
+- [ ] CBDT defaulters live refresh — Akamai-blocked; needs `curl_cffi` TLS-fingerprint impersonation (not in `refresh_live.py` yet)
+- [ ] PAN/GSTIN extraction from OpenSanctions `identifiers` column — live-refresh currently pulls names only
+- [ ] **(quick win)** Register a free **data.gov.in API key** → removes the 10-row clamp, 900 → 129,694 MCA struck-off rows, zero new code
+- [ ] Scheduled/continuous refresh (EventBridge Scheduler + Step Functions) — `refresh_live.py` is on-demand only today
+- [ ] `negreg_din` / `cirp_cases` stay synthetic — genuinely gated, no free bulk source exists; revisit only if a paid feed becomes available
 
-- [ ] Sandbox access arrives ~Aug 4 → swap synthetic data for IDBI's sandbox APIs/datasets
-- [ ] Retrain models on sandbox data via the same pipeline
-- [ ] Prototype-phase polish + jury Demo Day (Aug 17–28)
+### B. Loan products — 2 of 4 real
+- [ ] **Invoice / Bill Discounting** — size against a specific invoice's value + the buyer's creditworthiness
+- [ ] **Trade Finance** — size against LC/shipment value + trade-cycle length
+
+### C. The agentic layer — designed, zero code yet
+- [ ] Read-only "Talk to your Health Card" Q&A agent (tools return already-computed facts only)
+- [ ] Continuous post-disbursal monitoring — re-run the EWS pipeline monthly per disbursed loan
+- [ ] Adverse-media / entity-risk scanner — reuse the existing `news-module` (Hono+Drizzle+Gemini)
+- [ ] RAG over ~8 RBI/SIDBI policy PDFs — regulatory citation on each decline reason
+- [ ] Cyber-exposure agent — dark-web/breach/phishing-domain monitoring on the borrower's identity, reusing the PAN-graph (Walrus Securitas overlap)
+- [ ] Compliance-citation agent — RBI/DPDP/AML, same read-only-tool pattern
+
+### D. Trust features Track 03 rivals have that we don't
+- [ ] **(quick win)** Counterfactual recourse ("what exact change moves DECLINE→APPROVE") — cheap given the monotonic model; SAARTHI has this
+- [ ] Fairness/bias audit (demographic-parity check, audit-only) — SAARTHI has this, RBI FREE-AI rewards it
+- [ ] Maker-checker approval workflow + model governance screen — presentational, no new modeling; Megalodon's "HealthLens" has this
+- [ ] Real external-dataset validation of the core scoring model — UdyamAI/DRISHTi/SAARTHI all validate on real public credit data; ours is synthetic-only on the scoring side (registry screening is already real) — **sharpest gap a juror could name**
+
+### E. Going from "adapter-ready" to actually live
+- [ ] Real Account Aggregator connection (Finvu/Setu/OneMoney) — the big unlock, everything downstream is already shaped for it
+- [ ] Real EPFO connector — currently a stub on the real establishment-search shape
+- [ ] Real ULI connection — needs RBIH lender onboarding, not just sandbox access
+- [ ] OCEN Loan Agent registration — so the loan-offer JSON has somewhere real to go
+- [ ] Replace `bank_impact` panel's industry-benchmark ranges with IDBI's own real per-application cost — already flagged in-product, not hidden
+- [ ] Supabase/Aurora Postgres swap — consent logs, portfolio persistence, auth (`STACK.md`'s named production path, not wired in v1)
+
+### F. Known, proven, not-yet-merged fixes
+- [ ] **(quick win)** Token-blocking index for name screening — measured 20ms→0.7ms, same recall, proven in `docs/INFRA-AWS.md` research, never merged into `registry.py`
+- [ ] **(quick win)** Lock down CORS (`allow_origins=["*"]` today) — one line, required before anything is public
+- [ ] `/api/ready` distinct from `/api/health` — health currently reports `degraded` instead of failing, risks a load balancer routing to a dead container
+- [ ] Split serving vs. training Python dependencies — ~211MB off the container image; verify `shap` doesn't eagerly pull in `matplotlib` first
+
+### G. Deployment
+- [ ] Actually go live on a public URL — still open. Either `STACK.md`'s Vercel+Render plan, or the fuller AWS path in `docs/INFRA-AWS.md` — needs your go-ahead + cloud accounts connected
+
+**If time is short before Sep 6, priority order: A's data.gov.in key → D's counterfactual recourse → F's name-screening fix.** Highest ratio of impact to effort, in that order.

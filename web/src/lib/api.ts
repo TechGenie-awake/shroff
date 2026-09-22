@@ -7,6 +7,8 @@
 import type {
   GraphResponse,
   HealthResponse,
+  LoanTypeId,
+  LoanTypeInfo,
   MsmeResponse,
   OcenOffer,
   Persona,
@@ -19,6 +21,7 @@ import {
   graphFixtures,
   graphPanByMsme,
   healthFixture,
+  loanTypesFixture,
   msmeFixtures,
   ocenFixtures,
   personasFixture,
@@ -119,19 +122,36 @@ export function getMsme(id: string): Promise<Sourced<MsmeResponse>> {
 }
 
 /** POST /api/score */
-export function postScore(msmeId: string): Promise<Sourced<ScoreResponse>> {
+export function postScore(
+  msmeId: string,
+  loanType: LoanTypeId = "working_capital"
+): Promise<Sourced<ScoreResponse>> {
   return withFallback(
     () =>
       request<ScoreResponse>("/api/score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ msme_id: msmeId }),
+        body: JSON.stringify({ msme_id: msmeId, loan_type: loanType }),
       }),
     () => {
       const fx = scoreFixtures[msmeId];
       if (!fx) throw new Error(`Unknown msme_id: ${msmeId}`);
+      // Fixture mode only mirrors working_capital — the other formula needs the
+      // live API's real DSCR calculation, not a hand-written fallback number.
       return fx;
     }
+  );
+}
+
+/** GET /api/loan-types — the full MSME credit-product catalogue, including the
+ * honestly-not-yet-built ones (see ml/api/decision.py LOAN_TYPE_CATALOGUE). */
+export function getLoanTypes(): Promise<Sourced<LoanTypeInfo[]>> {
+  return withFallback(
+    () =>
+      request<{ loan_types: LoanTypeInfo[] }>("/api/loan-types").then(
+        (r) => r.loan_types
+      ),
+    () => loanTypesFixture
   );
 }
 

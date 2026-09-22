@@ -4,6 +4,19 @@
  */
 
 export type Verdict = "APPROVE" | "REFER" | "DECLINE";
+export type LoanTypeId =
+  | "working_capital"
+  | "term_loan"
+  | "invoice_discounting"
+  | "trade_finance";
+
+/** GET /api/loan-types — one entry */
+export interface LoanTypeInfo {
+  id: LoanTypeId;
+  label: string;
+  implemented: boolean;
+  sizing_rule: string;
+}
 export type Band = "A" | "B" | "C" | "D" | "E";
 export type EwsLevel = "green" | "amber" | "red";
 export type ReasonGroup = "cash_flow" | "growth" | "stability" | "compliance";
@@ -147,6 +160,24 @@ export interface DistressedCounterparty {
   is_sample: boolean;
 }
 
+export interface ImpactSource {
+  claim: string;
+  source: string;
+  range_inr?: number[];
+  range_usd?: number[];
+  converted_inr_at?: number;
+}
+
+/** Operational-impact overlay — onboarding/field-verification cost saved (see ml/api/impact.py) */
+export interface BankImpact {
+  auto_cleared: boolean;
+  field_verification_saved_inr: number[];
+  onboarding_cost_saved_inr: number[];
+  basis: string;
+  sources: ImpactSource[];
+  honest_caveat: string;
+}
+
 /** POST /api/score → ScoreResponse (exact field names per CONTRACTS.md) */
 export interface ScoreResponse {
   msme_id: string;
@@ -164,6 +195,7 @@ export interface ScoreResponse {
     verdict: Verdict;
     amount_inr: number;
     tenure_months: number;
+    loan_type: LoanTypeId;
     rationale: string;
   };
   reasons: Reason[];
@@ -188,6 +220,7 @@ export interface ScoreResponse {
     ks: number;
     trained_on: string;
   };
+  bank_impact?: BankImpact;
 }
 
 /** GET /api/screen */

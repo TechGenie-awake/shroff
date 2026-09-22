@@ -1,0 +1,69 @@
+IDBI Innovate 2026 — Sandbox Access Request
+=============================================
+
+For shortlisted teams entering the next phase of IDBI Innovate 2026, to request the
+AWS sandbox infrastructure access needed for project development.
+
+Signed in as: anshumanatrey@gmail.com  (Switch account)
+
+Legend: * = required question
+
+
+1. Email *
+   [ ] Record anshumanatrey@gmail.com as the email to be included with my response
+
+2. Team Name *
+   [                                                                        ]
+
+3. Track *
+   [                                                                        ]
+
+4. Use case *
+   [                                                                        ]
+
+5. AWS Services Required *                              (select all that apply)
+   [ ] EC2
+   [ ] S3
+   [ ] RDS
+   [ ] Lambda
+   [ ] VPC
+   [ ] Other: ______________________
+
+6. Region Preference *
+   [ ] Mumbai
+       (only option captured from the form — may be a single-choice field or a
+       dropdown with more regions available once opened live; verify on submit)
+
+7. Estimated Compute or Storage Size *
+   [                                                                        ]
+
+8. Required Duration — Start Date *
+   [ Date picker: DD/MM/YYYY                                                ]
+
+9. Required Duration — End Date *
+   [ Date picker: DD/MM/YYYY                                                ]
+
+10. Estimated Cost (if known)
+    [                                                                       ]
+
+11. Business or Technical Justification *
+    [                                                                       ]
+    [                                                                       ]
+
+12. Point of Contact Name *
+    [                                                                       ]
+
+13. Point of Contact Email *
+    [                                                                       ]
+
+14. Point of Contact Phone Number *
+    [                                                                       ]
+
+15. Which city do you belong to? *
+    [                                                                       ]
+
+
+-------------------------------------------------------------------------------
+Reference: docs/INFRA-AWS.md has the measured AWS sizing (vCPU/RAM/storage per
+service, region rationale for ap-south-1/Mumbai, and the AWS services SHROFF
+actually needs) to answer Q3, Q5, Q7, and Q11 above.

@@ -8,6 +8,7 @@ import type {
   ConsentArtefact,
   GraphResponse,
   HealthResponse,
+  LoanTypeInfo,
   MonthlyRow,
   MsmeResponse,
   OcenOffer,
@@ -75,6 +76,36 @@ export const healthFixture: HealthResponse = {
   model_version: "v1",
   artifacts_loaded: true,
 };
+
+export const loanTypesFixture: LoanTypeInfo[] = [
+  {
+    id: "working_capital",
+    label: "Working Capital / Cash Credit",
+    implemented: true,
+    sizing_rule:
+      "20% of annualized bank-verified turnover (Nayak Committee norm) \u00d7 band factor",
+  },
+  {
+    id: "term_loan",
+    label: "Term Loan (equipment / expansion)",
+    implemented: true,
+    sizing_rule:
+      "DSCR-based: free cash flow \u00f7 band DSCR requirement \u2192 max EMI \u2192 present-valued over a longer tenure at a band test rate",
+  },
+  {
+    id: "invoice_discounting",
+    label: "Invoice / Bill Discounting (TReDS-style)",
+    implemented: false,
+    sizing_rule:
+      "Not yet built \u2014 would size against a specific invoice's value and the buyer's own creditworthiness, not the borrower's turnover",
+  },
+  {
+    id: "trade_finance",
+    label: "Trade Finance (import/export)",
+    implemented: false,
+    sizing_rule: "Not yet built \u2014 would size against LC/shipment value and trade-cycle length",
+  },
+];
 
 /* ────────────────────────── personas ────────────────────────── */
 
@@ -328,6 +359,42 @@ const tridentGstinHit: ScreeningHit = {
 
 /* ────────────────────────── /api/score ────────────────────────── */
 
+const IMPACT_SOURCES = [
+  {
+    claim: "Physical field/address-verification visit",
+    source: "SalaryBox — Background Verification Cost in India, 2026",
+    range_inr: [500, 1500],
+  },
+  {
+    claim: "Traditional MSME onboarding (physical meeting + document collection)",
+    source: "MSME digital-lending acquisition-cost research (The Digital Fifth / Dvara)",
+    range_usd: [70, 200],
+    converted_inr_at: 83.0,
+  },
+];
+
+const IMPACT_CLEARED: ScoreResponse["bank_impact"] = {
+  auto_cleared: true,
+  field_verification_saved_inr: [500, 1500],
+  onboarding_cost_saved_inr: [5810, 16600],
+  basis:
+    "Deterministic registry screening + AA-consented data cleared this application without a manual field-verification visit or a physical document-collection cycle — subject to IDBI's own KYC/compliance policy confirming which case classes still require an in-person check.",
+  sources: IMPACT_SOURCES,
+  honest_caveat:
+    "These are cited industry-benchmark ranges, not IDBI's own measured cost. Replacing this with IDBI's real per-application onboarding and field-verification cost is one of our sandbox-access data asks.",
+};
+
+const IMPACT_FLAGGED: ScoreResponse["bank_impact"] = {
+  auto_cleared: false,
+  field_verification_saved_inr: [0, 0],
+  onboarding_cost_saved_inr: [0, 0],
+  basis:
+    "A deterministic overlay flagged this application for manual review — no automation savings are claimed here; routing this to a human reviewer is the correct, intended outcome, not a system failure.",
+  sources: IMPACT_SOURCES,
+  honest_caveat:
+    "These are cited industry-benchmark ranges, not IDBI's own measured cost. Replacing this with IDBI's real per-application onboarding and field-verification cost is one of our sandbox-access data asks.",
+};
+
 export const scoreFixtures: Record<string, ScoreResponse> = {
   RAMESH001: {
     msme_id: "RAMESH001",
@@ -340,6 +407,7 @@ export const scoreFixtures: Record<string, ScoreResponse> = {
       verdict: "APPROVE",
       amount_inr: 1200000,
       tenure_months: 24,
+      loan_type: "working_capital",
       rationale:
         "20% working-capital norm on ₹92.3L bank-verified annual turnover at band-A factor 0.65 supports ₹12.0L against ₹15.0L requested.",
     },
@@ -391,6 +459,7 @@ export const scoreFixtures: Record<string, ScoreResponse> = {
       supply_chain: { top3_buyer_share: 0.55, distressed_counterparties: [] },
     },
     model: { version: "v1", auc: 0.874, ks: 0.516, trained_on: "synthetic-v1" },
+    bank_impact: IMPACT_CLEARED,
   },
 
   SURESH002: {
@@ -404,6 +473,7 @@ export const scoreFixtures: Record<string, ScoreResponse> = {
       verdict: "DECLINE",
       amount_inr: 0,
       tenure_months: 0,
+      loan_type: "working_capital",
       rationale:
         "Band D with red early-warning status falls below the lending threshold; GST-declared turnover diverges +40% from bank-verified inflows, failing the cross-verification check.",
     },
@@ -474,6 +544,7 @@ export const scoreFixtures: Record<string, ScoreResponse> = {
       },
     },
     model: { version: "v1", auc: 0.874, ks: 0.516, trained_on: "synthetic-v1" },
+    bank_impact: IMPACT_FLAGGED,
   },
 
   PHOENIX003: {
@@ -487,6 +558,7 @@ export const scoreFixtures: Record<string, ScoreResponse> = {
       verdict: "REFER",
       amount_inr: 400000,
       tenure_months: 12,
+      loan_type: "working_capital",
       rationale:
         "Registry overlay forces manual referral — promoter DIN links to struck-off Vertex Impex at a shared address (phoenix pattern); eligible exposure capped at ₹4.0L under the 20% working-capital norm at band C pending review.",
     },
@@ -534,6 +606,7 @@ export const scoreFixtures: Record<string, ScoreResponse> = {
       supply_chain: { top3_buyer_share: 0.48, distressed_counterparties: [] },
     },
     model: { version: "v1", auc: 0.874, ks: 0.516, trained_on: "synthetic-v1" },
+    bank_impact: IMPACT_FLAGGED,
   },
 };
 

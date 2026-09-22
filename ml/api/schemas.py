@@ -8,11 +8,13 @@ from pydantic import BaseModel, Field
 
 class ScoreRequest(BaseModel):
     msme_id: str
+    loan_type: str = "working_capital"  # or "term_loan" — see api/decision.py LOAN_TYPES
 
 
 class WhatIfRequest(BaseModel):
     msme_id: str
     overrides: dict[str, float] = Field(default_factory=dict)
+    loan_type: str = "working_capital"
 
 
 class Reason(BaseModel):
@@ -28,7 +30,19 @@ class Decision(BaseModel):
     verdict: str  # APPROVE | REFER | DECLINE
     amount_inr: int
     tenure_months: int
+    loan_type: str
     rationale: str
+
+
+class LoanTypeInfo(BaseModel):
+    id: str
+    label: str
+    implemented: bool
+    sizing_rule: str
+
+
+class LoanTypesResponse(BaseModel):
+    loan_types: list[LoanTypeInfo]
 
 
 class ScreeningOverlay(BaseModel):
@@ -60,6 +74,23 @@ class ModelInfo(BaseModel):
     trained_on: str
 
 
+class ImpactSource(BaseModel):
+    claim: str
+    source: str
+    range_inr: Optional[list[int]] = None
+    range_usd: Optional[list[int]] = None
+    converted_inr_at: Optional[float] = None
+
+
+class BankImpact(BaseModel):
+    auto_cleared: bool
+    field_verification_saved_inr: list[int]
+    onboarding_cost_saved_inr: list[int]
+    basis: str
+    sources: list[ImpactSource]
+    honest_caveat: str
+
+
 class ScoreResponse(BaseModel):
     msme_id: str
     name: str
@@ -73,6 +104,8 @@ class ScoreResponse(BaseModel):
     model: ModelInfo
     # optional LLM prose (env-gated; template reasons are the default path) — omitted when None
     narrative: Optional[str] = None
+    # operational-impact overlay — onboarding/field-verification cost saved (see api/impact.py)
+    bank_impact: Optional[BankImpact] = None
 
 
 class PersonaOut(BaseModel):

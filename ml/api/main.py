@@ -5,7 +5,15 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from api import schemas
-from api.decision import compute_ews, decide, run_screening, supply_chain_overlay
+from api.decision import (
+    LOAN_TYPE_CATALOGUE,
+    LOAN_TYPES,
+    compute_ews,
+    decide,
+    run_screening,
+    supply_chain_overlay,
+)
+from api.impact import compute_bank_impact
 from api.narrative import maybe_narrative
 from api.rails import build_ocen_offer, rails_status
 from api.reasons import top_reasons
@@ -65,7 +73,17 @@ def msme_detail(msme_id: str) -> dict:
     }
 
 
-def _score_payload(msme_id: str, overrides: dict[str, float] | None = None) -> dict:
+def _score_payload(msme_id: str, overrides: dict[str, float] | None = None,
+                    loan_type: str = "working_capital") -> dict:
+    if loan_type not in LOAN_TYPES:
+        catalogue = {t["id"]: t for t in LOAN_TYPE_CATALOGUE}
+        if loan_type in catalogue:
+            raise HTTPException(
+                status_code=422,
+                detail=f"loan_type '{loan_type}' is not implemented yet — {catalogue[loan_type]['sizing_rule']}. "
+                       f"Use one of {LOAN_TYPES}. See GET /api/loan-types for the full catalogue.")
+        raise HTTPException(status_code=422,
+                            detail=f"unknown loan_type '{loan_type}'. Use one of {LOAN_TYPES}.")
     eng = get_engine()
     if not eng.has(msme_id):
         raise HTTPException(status_code=404, detail=f"unknown msme_id {msme_id}")
@@ -81,8 +99,9 @@ def _score_payload(msme_id: str, overrides: dict[str, float] | None = None) -> d
     ews = compute_ews(g)
     screening = run_screening(profile)
     supply = supply_chain_overlay(eng, msme_id, g)
-    decision, band_eff = decide(profile, g, s["score"], s["band"], screening, ews)
+    decision, band_eff = decide(profile, g, s["score"], s["band"], screening, ews, loan_type)
     reasons = top_reasons(x)
+    bank_impact = compute_bank_impact(decision["verdict"], screening, ews)
 
     payload = {
         "msme_id": msme_id,
@@ -99,6 +118,7 @@ def _score_payload(msme_id: str, overrides: dict[str, float] | None = None) -> d
             "supply_chain": supply,
         },
         "model": eng.model_info(),
+        "bank_impact": bank_impact,
     }
     narrative = maybe_narrative(payload)  # None unless LLM_API_KEY set
     if narrative:
@@ -108,12 +128,19 @@ def _score_payload(msme_id: str, overrides: dict[str, float] | None = None) -> d
 
 @app.post("/api/score", response_model=schemas.ScoreResponse, response_model_exclude_none=True)
 def score(req: schemas.ScoreRequest) -> dict:
-    return _score_payload(req.msme_id)
+    return _score_payload(req.msme_id, loan_type=req.loan_type)
 
 
 @app.post("/api/whatif", response_model=schemas.ScoreResponse, response_model_exclude_none=True)
 def whatif(req: schemas.WhatIfRequest) -> dict:
-    return _score_payload(req.msme_id, req.overrides or None)
+    return _score_payload(req.msme_id, req.overrides or None, loan_type=req.loan_type)
+
+
+@app.get("/api/loan-types", response_model=schemas.LoanTypesResponse)
+def loan_types() -> dict:
+    """Every MSME credit product IDBI offers — including the honestly-not-yet-built
+    ones, so the selector shows the real shape of the problem without overclaiming."""
+    return {"loan_types": LOAN_TYPE_CATALOGUE}
 
 
 # ---- Lending rails (output side): OCEN loan offer + adapter status ----
