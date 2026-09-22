@@ -160,6 +160,10 @@ export interface ScoreResponse {
     stability: number;
     compliance: number;
   };
+  /** healthier (lower PD) than this % of the reference population — same
+   * "higher = healthier" convention as sub_scores (ml/api/scoring.py) */
+  score_percentile?: number;
+  population_n?: number;
   decision: {
     verdict: Verdict;
     amount_inr: number;
@@ -274,4 +278,49 @@ export interface RailsResponse {
   rails: RailStatus[];
   summary: string;
   principle: string;
+}
+
+/** GET /api/model/info — architecture, the exact scorecard formula, and live
+ * validation metrics read straight from the trained bundle (never hardcoded) */
+export interface ModelInfoResponse {
+  architecture: {
+    sub_models: string[];
+    algorithm: string;
+    combiner: string;
+    calibration: string;
+    baseline: string;
+    explainability: string;
+  };
+  scorecard_formula: {
+    description: string;
+    score_ref: number;
+    pd_ref: number;
+    points_per_doubling: number;
+    odds_ref: number;
+    score_min: number;
+    score_max: number;
+    bands: {
+      band: string;
+      floor_score: number | null;
+      band_factor: number;
+      tenure_months: number;
+    }[];
+  };
+  metrics: {
+    sub_models: Record<string, { auc: number; ks: number }>;
+    combined: { auc: number; ks: number; brier_calibrated: number };
+    baseline_logreg: { auc: number; ks: number };
+    train_n: number;
+    holdout_n: number;
+    prevalence: number;
+    meta_coefficients: Record<string, number>;
+    model_version: string;
+    trained_on: string;
+    seed: number;
+  };
+  monotone_constraints: Record<
+    string,
+    { n_features: number; n_risk_increasing: number; n_risk_decreasing: number; n_unconstrained: number }
+  >;
+  total_features: number;
 }

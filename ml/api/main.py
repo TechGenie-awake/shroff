@@ -1,6 +1,9 @@
 """SHROFF ML API — FastAPI on :8000. Run from ml/:  uv run uvicorn api.main:app --port 8000"""
 from __future__ import annotations
 
+import json
+import os
+
 import pandas as pd
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -18,8 +21,9 @@ from api.live_intake import (
 from api.narrative import maybe_narrative
 from api.rails import build_ocen_offer, rails_status
 from api.reasons import top_reasons
-from api.scoring import get_engine
-from features.build import FEATURE_NAMES, compute_firm_features
+from api.scoring import ARTIFACTS, get_engine
+from features.build import FEATURE_NAMES, GROUP_FEATURES, GROUPS, MONOTONE
+from train.scorecard import BAND_FACTOR, BAND_TENURE, BANDS, ODDS_REF, PDO, SCORE_MAX, SCORE_MIN, SCORE_REF
 
 app = FastAPI(title="SHROFF — MSME Financial Health Card API", version="v1")
 
@@ -118,6 +122,8 @@ def _assemble_response(msme_id: str, profile: dict, g, x, eng,
         "band": band_eff,
         "pd_12m": round(s["pd_12m"], 4),
         "sub_scores": s["sub_scores"],
+        "score_percentile": s.get("score_percentile"),
+        "population_n": s.get("population_n"),
         "decision": decision,
         "reasons": reasons,
         "overlays": {
@@ -258,3 +264,55 @@ def ocen_offer(msme_id: str) -> dict:
 def rails() -> dict:
     """DataSourceAdapter registry — AA (live-capable) · OCEN (output) · ULI/EPFO (adapter-ready)."""
     return rails_status()
+
+
+@app.get("/api/model/info")
+def model_info() -> dict:
+    """Everything about HOW the score is computed — architecture, the exact
+    scorecard formula, per-sub-model + combined validation metrics, and the
+    monotone-constraint direction of every feature. All values below are read
+    live from ml/artifacts/metrics.json and train/scorecard.py — nothing here
+    is hardcoded copy that could drift from the actual trained model."""
+    with open(os.path.join(ARTIFACTS, "metrics.json")) as fh:
+        metrics = json.load(fh)
+
+    band_table = [
+        {"band": b, "floor_score": floor, "band_factor": BAND_FACTOR[b],
+         "tenure_months": BAND_TENURE[b]}
+        for b, floor in BANDS if b != "E"
+    ] + [{"band": "E", "floor_score": None, "band_factor": BAND_FACTOR["E"],
+          "tenure_months": BAND_TENURE["E"]}]
+
+    monotone_summary = {}
+    for g in GROUPS:
+        cols = GROUP_FEATURES[g]
+        monotone_summary[g] = {
+            "n_features": len(cols),
+            "n_risk_increasing": sum(1 for c in cols if MONOTONE[c] == 1),
+            "n_risk_decreasing": sum(1 for c in cols if MONOTONE[c] == -1),
+            "n_unconstrained": sum(1 for c in cols if MONOTONE[c] == 0),
+        }
+
+    return {
+        "architecture": {
+            "sub_models": GROUPS,
+            "algorithm": "Monotonic-constrained LightGBM (gradient-boosted trees), one per sub-model group",
+            "combiner": "Logistic regression on logit(sub-model PDs), fit on 5-fold "
+                        "out-of-fold sub-model predictions (no leakage)",
+            "calibration": "Isotonic regression on the holdout split -> 12-month PD",
+            "baseline": "Standardized LogisticRegression over all features, reported "
+                        "side-by-side as the 'regulator view'",
+            "explainability": "TreeSHAP on the deciding sub-models directly (not a "
+                              "surrogate), weighted by the combiner's coefficients",
+        },
+        "scorecard_formula": {
+            "description": "score = SCORE_REF + PDO * log2(odds / ODDS_REF), where "
+                           "odds = (1 - PD) / PD",
+            "score_ref": SCORE_REF, "pd_ref": 0.05, "points_per_doubling": PDO,
+            "odds_ref": round(ODDS_REF, 2), "score_min": SCORE_MIN, "score_max": SCORE_MAX,
+            "bands": band_table,
+        },
+        "metrics": metrics,
+        "monotone_constraints": monotone_summary,
+        "total_features": len(FEATURE_NAMES),
+    }

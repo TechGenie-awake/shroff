@@ -74,6 +74,11 @@ class ScoreResponse(BaseModel):
     band: str
     pd_12m: float
     sub_scores: dict[str, int]
+    # this borrower's combined score vs the reference population, e.g. 87.3
+    # means "healthier (lower PD) than 87.3% of the population" — computed
+    # once at startup from the trained bundle, not hardcoded (ml/api/scoring.py)
+    score_percentile: Optional[float] = None
+    population_n: Optional[int] = None
     decision: Decision
     reasons: list[Reason]
     overlays: Overlays

@@ -80,7 +80,7 @@ export function DocumentUpload() {
 
   return (
     <div
-      className="reveal mt-4 rounded-lg border border-rule bg-panel px-5 py-4"
+      className="reveal rounded-lg border border-rule bg-panel px-5 py-4"
       style={{ animationDelay: "70ms" }}
     >
       <div className="section-label">Document upload demo</div>

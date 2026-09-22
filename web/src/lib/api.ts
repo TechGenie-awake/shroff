@@ -7,6 +7,7 @@
 import type {
   GraphResponse,
   HealthResponse,
+  ModelInfoResponse,
   MsmeResponse,
   OcenOffer,
   Persona,
@@ -19,6 +20,7 @@ import {
   graphFixtures,
   graphPanByMsme,
   healthFixture,
+  modelInfoFixture,
   msmeFixtures,
   ocenFixtures,
   personasFixture,
@@ -196,6 +198,14 @@ export function getRails(): Promise<Sourced<RailsResponse>> {
   return withFallback(
     () => request<RailsResponse>("/api/rails"),
     () => railsFixture
+  );
+}
+
+/** GET /api/model/info — architecture, scorecard formula, live validation metrics */
+export function getModelInfo(): Promise<Sourced<ModelInfoResponse>> {
+  return withFallback(
+    () => request<ModelInfoResponse>("/api/model/info"),
+    () => modelInfoFixture
   );
 }
 
