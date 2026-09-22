@@ -188,6 +188,10 @@ export interface ScoreResponse {
     ks: number;
     trained_on: string;
   };
+  /** Set only by POST /api/score/live — deterministically simulated pending
+   * IDBI's real GSTN/Bank-AA/EPFO sandbox; screening + graph run on real data. */
+  simulated?: boolean;
+  simulation_note?: string;
 }
 
 /** GET /api/screen */

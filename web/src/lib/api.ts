@@ -199,6 +199,25 @@ export function getRails(): Promise<Sourced<RailsResponse>> {
   );
 }
 
+/**
+ * POST /api/score/live — score ANY GSTIN/PAN the user types in, not one of
+ * the 3 fixed personas. No fixture fallback: this endpoint has no meaningful
+ * offline stand-in for arbitrary input, so a down API surfaces as a real error.
+ */
+export async function postScoreLive(
+  identifier: string,
+  requestedAmountInr?: number
+): Promise<ScoreResponse> {
+  return request<ScoreResponse>("/api/score/live", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      identifier,
+      ...(requestedAmountInr ? { requested_amount_inr: requestedAmountInr } : {}),
+    }),
+  });
+}
+
 /** Resolve the graph-walk PAN for an msme id (profile PAN when live). */
 export function panForMsme(id: string, profilePan?: string): string {
   return profilePan ?? graphPanByMsme[id] ?? id;

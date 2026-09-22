@@ -15,6 +15,13 @@ class WhatIfRequest(BaseModel):
     overrides: dict[str, float] = Field(default_factory=dict)
 
 
+class LiveScoreRequest(BaseModel):
+    """Score an arbitrary GSTIN/PAN the user types in — not one of the fixed
+    personas. See ml/api/live_intake.py: response is clearly marked `simulated`."""
+    identifier: str
+    requested_amount_inr: Optional[int] = None
+
+
 class Reason(BaseModel):
     code: str
     group: str
@@ -73,6 +80,9 @@ class ScoreResponse(BaseModel):
     model: ModelInfo
     # optional LLM prose (env-gated; template reasons are the default path) — omitted when None
     narrative: Optional[str] = None
+    # set only for /api/score/live — honesty marker per CONTRACTS.md's is_sample pattern
+    simulated: Optional[bool] = None
+    simulation_note: Optional[str] = None
 
 
 class PersonaOut(BaseModel):

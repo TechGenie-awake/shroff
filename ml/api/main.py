@@ -1,15 +1,23 @@
 """SHROFF ML API — FastAPI on :8000. Run from ml/:  uv run uvicorn api.main:app --port 8000"""
 from __future__ import annotations
 
+import pandas as pd
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from api import schemas
 from api.decision import compute_ews, decide, run_screening, supply_chain_overlay
+from api.live_intake import (
+    LiveIntakeError,
+    consent_artefact as live_consent_artefact,
+    is_live_id,
+    simulate_from_msme_id,
+)
 from api.narrative import maybe_narrative
 from api.rails import build_ocen_offer, rails_status
 from api.reasons import top_reasons
 from api.scoring import get_engine
+from features.build import FEATURE_NAMES, compute_firm_features
 
 app = FastAPI(title="SHROFF — MSME Financial Health Card API", version="v1")
 
@@ -52,35 +60,52 @@ def personas() -> list[dict]:
             for p in eng.personas]
 
 
-@app.get("/api/msme/{msme_id}", response_model=schemas.MsmeDetail)
-def msme_detail(msme_id: str) -> dict:
+def _resolve(msme_id: str, requested_amount_inr: int | None = None):
+    """profile, monthly-DataFrame for ANY id — a fixed persona (via the trained
+    Engine/parquet) or a `LIVE-<GSTIN|PAN>` id (via deterministic simulation,
+    ml/api/live_intake.py). The id IS the seed for live ones, so every endpoint
+    below is a transparent pass-through regardless of which kind it got."""
+    if is_live_id(msme_id):
+        try:
+            profile, g, meta = simulate_from_msme_id(msme_id, requested_amount_inr)
+        except LiveIntakeError as e:
+            raise HTTPException(status_code=422, detail=str(e))
+        return profile, g, meta
     eng = get_engine()
     if not eng.has(msme_id):
         raise HTTPException(status_code=404, detail=f"unknown msme_id {msme_id}")
-    g = eng.monthly_rows(msme_id)
+    return eng.profile(msme_id), eng.monthly_rows(msme_id), None
+
+
+@app.get("/api/msme/{msme_id}", response_model=schemas.MsmeDetail)
+def msme_detail(msme_id: str) -> dict:
+    profile, g, _meta = _resolve(msme_id)
+    consent = live_consent_artefact(msme_id) if is_live_id(msme_id) else get_engine().consent(msme_id)
+    monthly = g.drop(columns=["msme_id"]) if "msme_id" in g.columns else g
     return {
-        "profile": eng.profile(msme_id),
-        "consent": eng.consent(msme_id),
-        "monthly": g.drop(columns=["msme_id"]).to_dict(orient="records"),
+        "profile": profile,
+        "consent": consent,
+        "monthly": monthly.to_dict(orient="records"),
     }
 
 
-def _score_payload(msme_id: str, overrides: dict[str, float] | None = None) -> dict:
-    eng = get_engine()
-    if not eng.has(msme_id):
-        raise HTTPException(status_code=404, detail=f"unknown msme_id {msme_id}")
-    try:
-        x = eng.features_for(msme_id, overrides)
-    except KeyError as e:
-        raise HTTPException(status_code=422,
-                            detail=f"unknown feature in overrides: {e.args[0]}")
+def _assemble_response(msme_id: str, profile: dict, g, x, eng,
+                        supply_from_engine: bool = True) -> dict:
+    """Shared tail: score -> overlays -> decision -> reasons -> ScoreResponse shape.
+    Used by both the persona path (/api/score) and the live-intake path
+    (/api/score/live) — everything past feature-building is identical, per
+    the DataSourceAdapter design (BUILD-SPEC-track03.md)."""
     s = eng.score_features(x)
-    profile = eng.profile(msme_id)
-    g = eng.monthly_rows(msme_id)
-
     ews = compute_ews(g)
     screening = run_screening(profile)
-    supply = supply_chain_overlay(eng, msme_id, g)
+    if supply_from_engine:
+        supply = supply_chain_overlay(eng, msme_id, g)
+    else:
+        # live-intake has no real counterparty GSTINs to cross-check — report the
+        # concentration metric honestly, leave distressed-counterparty empty rather
+        # than fabricate a hit.
+        supply = {"top3_buyer_share": round(float(g["top3_buyer_share"].tail(12).mean()), 2),
+                  "distressed_counterparties": []}
     decision, band_eff = decide(profile, g, s["score"], s["band"], screening, ews)
     reasons = top_reasons(x)
 
@@ -106,6 +131,35 @@ def _score_payload(msme_id: str, overrides: dict[str, float] | None = None) -> d
     return payload
 
 
+def _score_payload(msme_id: str, overrides: dict[str, float] | None = None,
+                    requested_amount_inr: int | None = None) -> dict:
+    eng = get_engine()
+    if is_live_id(msme_id):
+        profile, g, meta = _resolve(msme_id, requested_amount_inr)
+        cp_top1 = float(g["top3_buyer_share"].tail(12).mean()) * 0.55
+        feats = compute_firm_features(g, cp_top1, 8.0)
+        if overrides:
+            for k, v in overrides.items():
+                if k not in FEATURE_NAMES:
+                    raise HTTPException(status_code=422, detail=f"unknown feature in overrides: {k}")
+                feats[k] = float(v)
+        x = pd.DataFrame([feats])[FEATURE_NAMES]
+        payload = _assemble_response(msme_id, profile, g, x, eng, supply_from_engine=False)
+        payload["simulated"] = True
+        payload["simulation_note"] = meta["note"]
+        return payload
+    if not eng.has(msme_id):
+        raise HTTPException(status_code=404, detail=f"unknown msme_id {msme_id}")
+    try:
+        x = eng.features_for(msme_id, overrides)
+    except KeyError as e:
+        raise HTTPException(status_code=422,
+                            detail=f"unknown feature in overrides: {e.args[0]}")
+    profile = eng.profile(msme_id)
+    g = eng.monthly_rows(msme_id)
+    return _assemble_response(msme_id, profile, g, x, eng)
+
+
 @app.post("/api/score", response_model=schemas.ScoreResponse, response_model_exclude_none=True)
 def score(req: schemas.ScoreRequest) -> dict:
     return _score_payload(req.msme_id)
@@ -116,12 +170,38 @@ def whatif(req: schemas.WhatIfRequest) -> dict:
     return _score_payload(req.msme_id, req.overrides or None)
 
 
+def _canonical_live_id(identifier: str) -> str:
+    """Validate + normalize a raw GSTIN/PAN into the canonical `LIVE-<id>` msme_id
+    (same normalization live_intake.simulate() applies internally, done up front
+    here so a bad identifier 422s before anything else runs)."""
+    from api.live_intake import resolve_identifier
+    try:
+        resolved = resolve_identifier(identifier)
+    except LiveIntakeError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    return f"LIVE-{resolved['gstin'] or resolved['pan']}"
+
+
+@app.post("/api/score/live", response_model=schemas.ScoreResponse, response_model_exclude_none=True)
+def score_live(req: schemas.LiveScoreRequest) -> dict:
+    """Score ANY GSTIN/PAN the user types in — not one of the 3 fixed personas.
+    Profile + 24-month history are deterministically SIMULATED (ml/api/live_intake.py)
+    pending IDBI's real GSTN/Bank-AA/EPFO sandbox; screening + entity-graph overlays
+    still run against the REAL negative-registry data (ml/screening/registry.db).
+    Resolves to the canonical `LIVE-<id>` msme_id and delegates to the same path
+    every other endpoint uses, so /api/msme/{id}, /api/graph/{pan} and
+    /api/ocen/offer/{id} all transparently work for the id this returns too."""
+    msme_id = _canonical_live_id(req.identifier)
+    return _score_payload(msme_id, requested_amount_inr=req.requested_amount_inr)
+
+
 # ---- Lending rails (output side): OCEN loan offer + adapter status ----
 @app.get("/api/ocen/offer/{msme_id}")
 def ocen_offer(msme_id: str) -> dict:
     """The decision, reshaped as an OCEN 4.0-aligned loan offer (Step 5: plug into the pipes)."""
     payload = _score_payload(msme_id)
-    payload["pan"] = get_engine().profile(msme_id).get("pan", "")
+    profile, _g, _meta = _resolve(msme_id)
+    payload["pan"] = profile.get("pan", "") or ""
     return build_ocen_offer(payload)
 
 
